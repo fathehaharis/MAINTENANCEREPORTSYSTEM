@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         header("Location: admin_dashboard.php");
                         break;
                     case 2:
-                        header("Location: moderator_dashboard.php");
+                        header("Location: staffmaintenancedashboard.php");
                         break;
                     case 3:
                         header("Location: staff_dashboard.php");
@@ -144,7 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
 
-<header>Login</header>
+<header>Maintenance Report System</header>
 
 <main>
     <div class="login-container">
