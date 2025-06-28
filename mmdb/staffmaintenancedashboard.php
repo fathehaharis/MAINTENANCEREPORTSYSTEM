@@ -1,16 +1,17 @@
 <?php
+require 'conn.php';
 session_start();
-require 'db.php';
 
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'technician') {
+
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 2) {
     header("Location: login.php");
-    exit();
+    exit;
 }
 
 $tech_id = $_SESSION['user_id'];
 
 // Fetch assigned reports
-$sql = "SELECT * FROM report WHERE assigned_to = ?";
+$sql = "SELECT * FROM user_report WHERE assigned_to = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $tech_id);
 $stmt->execute();
