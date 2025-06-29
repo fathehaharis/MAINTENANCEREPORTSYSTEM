@@ -48,14 +48,14 @@ $reports = $stmt->get_result();
     </tr>
     <?php while($report = $reports->fetch_assoc()): ?>
         <tr>
-            <td><?= $report['id'] ?></td>
+            <td><?= $report['report_id'] ?></td>
             <td><?= htmlspecialchars($report['title']) ?></td>
             <td><?= htmlspecialchars($report['status']) ?></td>
             <td><?= htmlspecialchars($report['priority']) ?></td>
             <td><?= $report['due_date'] ?></td>
             <td>
                 <form method="post" action="update_status.php">
-                    <input type="hidden" name="report_id" value="<?= $report['id'] ?>">
+                    <input type="hidden" name="report_id" value="<?= $report['report_id'] ?>">
                     <select name="new_status">
                         <option value="In Progress">In Progress</option>
                         <option value="Resolved">Resolved</option>
