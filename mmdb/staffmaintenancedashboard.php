@@ -44,14 +44,14 @@ foreach ($statuses as $status) {
 <div class="navbar">
     <h1>Technician Dashboard</h1>
     <div class="nav-links">
-        <a href="tech-ass.php">View Assignments</a>
+        <a href="tech_ass.php">View Assignments</a>
         <a href="logout.php" class="logout">Logout</a>
     </div>
 </div>
 
 <div class="container">
     <h2>Welcome, <?= htmlspecialchars($full_name) ?>!</h2>
-    <p>This is your technician dashboard. From here, you can monitor your tasks and access tools quickly.</p>
+    <p>This is your technician dashboard. Here, you can monitor your tasks and access tools quickly.</p>
 
     <!-- Status Cards -->
     <div class="status-cards">
@@ -78,8 +78,8 @@ foreach ($statuses as $status) {
         <h3>Quick Tools</h3>
         <div class="tool-buttons">
             <a href="tech_ass.php">📋 View Assignments</a>
-            <a href="tech-archive.php">🗂 Archived Reports</a>
-            <a href="tech-help.php">❓ Maintenance Fundamentals</a>
+            <a href="tech_archive.php">🗂 Archived Reports</a>
+            <a href="https://www.annamalaiuniversity.ac.in/studport/download/engg/civil%20and%20structural/Building%20Repairs%20and%20Maintenance.pdf">❓ Maintenance Fundamentals</a>
 
         </div>
     </div>
