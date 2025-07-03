@@ -38,8 +38,7 @@ $reports = $stmt->get_result();
             <th>ID</th>
             <th>Title</th>
             <th>Status</th>
-            <th>Priority</th>
-            <th>Due Date</th>
+            <th>Report Date</th>
             <th>Update</th>
             <th>Attachments</th>
             <th>Upload</th>
@@ -49,8 +48,7 @@ $reports = $stmt->get_result();
                 <td><?= $report['report_id'] ?></td>
                 <td><?= htmlspecialchars($report['title']) ?></td>
                 <td><?= htmlspecialchars($report['status']) ?></td>
-                <td><?= htmlspecialchars($report['priority']) ?></td>
-                <td><?= $report['due_date'] ?></td>
+                <td><?= $report['date_reported'] ?></td>
                 <td>
                     <form method="post" action="update_status.php">
                         <input type="hidden" name="report_id" value="<?= $report['report_id'] ?>">
@@ -66,7 +64,7 @@ $reports = $stmt->get_result();
                 </td>
                 <td>
                     <?php
-                    $rid = $report['id'];
+                    $rid = $report['report_id'];
                     $aquery = $conn->prepare("SELECT media_id FROM attachment WHERE report_id = ?");
                     $aquery->bind_param("i", $rid);
                     $aquery->execute();
@@ -78,7 +76,7 @@ $reports = $stmt->get_result();
                 </td>
                 <td>
                     <form action="upload_attachment.php" method="post" enctype="multipart/form-data">
-                        <input type="hidden" name="report_id" value="<?= $report['id'] ?>">
+                        <input type="hidden" name="report_id" value="<?= $report['report_id'] ?>">
                         <input type="file" name="attachment" required>
                         <input type="submit" value="Upload">
                     </form>
