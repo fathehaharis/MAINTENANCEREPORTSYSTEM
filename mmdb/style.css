@@ -304,3 +304,15 @@ h2 {
         align-items: center;
     }
 }
+.btn-return {
+    text-decoration: none;
+    background-color: #7f8c8d;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 6px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-return:hover {
+    background-color: #626e70;
+}

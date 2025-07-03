@@ -1,9 +1,9 @@
 <?php
 require 'conn.php';
 
-$id = $_GET['id'] ?? 0;
+$id = $_GET['report_id'] ?? 0;
 
-$stmt = $conn->prepare("SELECT media_data FROM attachment WHERE media_id = ?");
+$stmt = $conn->prepare("SELECT media_url FROM attachment WHERE media_id = ?");
 $stmt->bind_param("i", $id);
 $stmt->execute();
 $stmt->store_result();

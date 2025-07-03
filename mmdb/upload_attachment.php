@@ -1,5 +1,5 @@
 <?php
-require 'db.php';
+require 'conn.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['attachment'])) {
     $report_id = $_POST['report_id'];
@@ -11,5 +11,5 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['attachment'])) {
     $stmt->execute();
 }
 
-header("Location: dashboard.php");
+header("Location: staffmaintenancedashboard.php");
 exit();

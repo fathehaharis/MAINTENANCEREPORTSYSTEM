@@ -21,18 +21,24 @@ $reports = $stmt->get_result();
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Technician Dashboard</title>
+    <title>Technician Assigned Reports</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="navbar">
-    <h1>Technician Dashboard</h1>
+    <h1>Assigned Reports</h1>
     <a href="logout.php">Logout</a>
 </div>
+    <div style="margin-bottom: 20px;">
+        <a href="tech_dashboard.php" class="btn-return">⬅ Return to Dashboard</a>
+    </div>
 
 <div class="container">
-    <h2>Assigned Maintenance Reports</h2>
+
+
+    <h2>Assigned Maintenance</h2>
+
     <table>
         <tr>
             <th>ID</th>
@@ -65,12 +71,12 @@ $reports = $stmt->get_result();
                 <td>
                     <?php
                     $rid = $report['report_id'];
-                    $aquery = $conn->prepare("SELECT media_id FROM attachment WHERE report_id = ?");
+                    $aquery = $conn->prepare("SELECT media_data FROM attachment WHERE report_id = ?");
                     $aquery->bind_param("i", $rid);
                     $aquery->execute();
                     $attachments = $aquery->get_result();
                     while ($a = $attachments->fetch_assoc()) {
-                        echo "<a class='attachment-link' href='view_attachment.php?id={$a['media_id']}' target='_blank'>View #{$a['media_id']}</a><br>";
+                        echo "<a class='attachment-link' href='view_attachment.php?id={$a['media_data']}' target='_blank'>View #{$a['media_data']}</a><br>";
                     }
                     ?>
                 </td>
