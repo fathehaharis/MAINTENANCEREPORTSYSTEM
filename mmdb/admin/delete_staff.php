@@ -1,9 +1,9 @@
 <?php
 session_start();
-require 'conn.php';
+require '../conn.php';
 
 if (!isset($_SESSION['user_id']) || (int)$_SESSION['role'] !== 1) {
-    header("Location: login.php");
+    header("Location: ../login.php");
     exit;
 }
 

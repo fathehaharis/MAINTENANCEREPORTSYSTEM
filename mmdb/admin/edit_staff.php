@@ -88,6 +88,7 @@ $stmt->close();
         <a href="manage_technician.php">Technician</a>
         <div class="sidebar-section-title">Report Management</div>
         <a href="assign_report.php">Assign Report</a>
+        <a href="view_report_history.php">View Report</a>
     </nav>
     <div class="logout-link">
         <a href="../logout.php">Logout</a>
