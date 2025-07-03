@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 2) {
 $tech_id = $_SESSION['user_id'];
 
 // Fetch assigned reports
-$sql = "SELECT * FROM user_report WHERE assigned_to = ? AND status != 'Completed'";
+$sql = "SELECT * FROM user_report WHERE assigned_to = ? AND status = 'Completed'";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $tech_id);
 $stmt->execute();
@@ -27,7 +27,7 @@ $reports = $stmt->get_result();
 <body>
 
 <div class="navbar">
-    <h1>Assigned Reports</h1>
+    <h1>Reports Archieved</h1>
     <div class="nav-links">
         <a href="tech_dashboard.php" class="btn-return">⬅ Dashboard</a>
         <a href="logout.php" class="logout">Logout</a>
@@ -36,7 +36,7 @@ $reports = $stmt->get_result();
 
 <div class="container">
 
-    <h2>My Assigned Maintenance Tasks</h2>
+    <h2>My Assigned Maintenance Archieved</h2>
     <table class="report-table">
         <thead>
             <tr>
@@ -44,9 +44,7 @@ $reports = $stmt->get_result();
                 <th>Title</th>
                 <th>Status</th>
                 <th>Report Date</th>
-                <th>Update Status</th>
                 <th>Attachments</th>
-                <th>Upload</th>
             </tr>
         </thead>
         <tbody>
@@ -56,20 +54,6 @@ $reports = $stmt->get_result();
                 <td><?= htmlspecialchars($report['title']) ?></td>
                 <td><?= htmlspecialchars($report['status']) ?></td>
                 <td><?= $report['date_reported'] ?></td>
-                <td>
-                    <form method="post" action="update_status.php" class="inline-form">
-                        <input type="hidden" name="report_id" value="<?= $report['report_id'] ?>">
-                        <select name="new_status" required>
-                            <option value="">--Select--</option>
-                            <option value="In Progress">In Progress</option>
-                            <option value="Resolved">Resolved</option>
-                            <option value="Need More Info">Need More Info</option>
-                            <option value="Completed">Completed</option>
-                            <option value="Escalated">Escalated</option>
-                        </select>
-                        <input type="submit" value="Update">
-                    </form>
-                </td>
                 <td>
                     <?php
                     $rid = $report['report_id'];
@@ -81,13 +65,6 @@ $reports = $stmt->get_result();
                         echo "<a class='attachment-link' href='view_attachment.php?id={$a['media_id']}' target='_blank'>View Attachment #{$a['media_id']}</a><br>";
                     }
                     ?>
-                </td>
-                <td>
-                    <form action="upload_attachment.php" method="post" enctype="multipart/form-data" class="inline-form">
-                        <input type="hidden" name="report_id" value="<?= $report['report_id'] ?>">
-                        <input type="file" name="attachment" required>
-                        <input type="submit" value="Upload">
-                    </form>
                 </td>
             </tr>
         <?php endwhile; ?>
