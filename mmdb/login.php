@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 switch ($role_id) {
                     case 1:
-                        header("Location: admin_dashboard.php");
+                        header("Location: admin/admin_dashboard.php");
                         break;
                     case 2:
                         header("Location: tech_dashboard.php");
