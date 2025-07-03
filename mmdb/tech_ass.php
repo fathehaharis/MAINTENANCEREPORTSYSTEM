@@ -74,12 +74,12 @@ $reports = $stmt->get_result();
                 <td>
                     <?php
                     $rid = $report['report_id'];
-                    $aquery = $conn->prepare("SELECT media_data FROM attachment WHERE report_id = ?");
+                    $aquery = $conn->prepare("SELECT media_id FROM attachment WHERE report_id = ?");
                     $aquery->bind_param("i", $rid);
                     $aquery->execute();
                     $attachments = $aquery->get_result();
                     while ($a = $attachments->fetch_assoc()) {
-                        echo "<a class='attachment-link' href='view_attachment.php?id={$a['media_data']}' target='_blank'>View #{$a['media_data']}</a><br>";
+                        echo "<a class='attachment-link' href='view_attachment.php?id={$a['media_id']}' target='_blank'>View Attachment #{$a['media_id']}</a><br>";
                     }
                     ?>
                 </td>
