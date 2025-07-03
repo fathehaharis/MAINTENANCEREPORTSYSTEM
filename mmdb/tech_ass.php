@@ -21,34 +21,36 @@ $reports = $stmt->get_result();
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Technician Assigned Reports</title>
+    <title>Technician - Assigned Reports</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="navbar">
     <h1>Assigned Reports</h1>
-    <a href="logout.php">Logout</a>
-</div>
-    <div style="margin-bottom: 20px;">
-        <a href="tech_dashboard.php" class="btn-return">⬅ Return to Dashboard</a>
+    <div class="nav-links">
+        <a href="tech_dashboard.php" class="btn-return">⬅ Dashboard</a>
+        <a href="logout.php" class="logout">Logout</a>
     </div>
+</div>
 
 <div class="container">
 
-
-    <h2>Assigned Maintenance</h2>
+    <h2>My Assigned Maintenance Tasks</h2>
 
     <table>
-        <tr>
-            <th>ID</th>
-            <th>Title</th>
-            <th>Status</th>
-            <th>Report Date</th>
-            <th>Update</th>
-            <th>Attachments</th>
-            <th>Upload</th>
-        </tr>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Report Date</th>
+                <th>Update Status</th>
+                <th>Attachments</th>
+                <th>Upload</th>
+            </tr>
+        </thead>
+        <tbody>
         <?php while($report = $reports->fetch_assoc()): ?>
             <tr>
                 <td><?= $report['report_id'] ?></td>
@@ -56,9 +58,10 @@ $reports = $stmt->get_result();
                 <td><?= htmlspecialchars($report['status']) ?></td>
                 <td><?= $report['date_reported'] ?></td>
                 <td>
-                    <form method="post" action="update_status.php">
+                    <form method="post" action="update_status.php" class="inline-form">
                         <input type="hidden" name="report_id" value="<?= $report['report_id'] ?>">
-                        <select name="new_status">
+                        <select name="new_status" required>
+                            <option value="">--Select--</option>
                             <option value="In Progress">In Progress</option>
                             <option value="Resolved">Resolved</option>
                             <option value="Need More Info">Need More Info</option>
@@ -81,7 +84,7 @@ $reports = $stmt->get_result();
                     ?>
                 </td>
                 <td>
-                    <form action="upload_attachment.php" method="post" enctype="multipart/form-data">
+                    <form action="upload_attachment.php" method="post" enctype="multipart/form-data" class="inline-form">
                         <input type="hidden" name="report_id" value="<?= $report['report_id'] ?>">
                         <input type="file" name="attachment" required>
                         <input type="submit" value="Upload">
@@ -89,7 +92,9 @@ $reports = $stmt->get_result();
                 </td>
             </tr>
         <?php endwhile; ?>
+        </tbody>
     </table>
+
 </div>
 
 </body>
