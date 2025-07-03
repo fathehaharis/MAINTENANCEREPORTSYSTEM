@@ -2,7 +2,6 @@
 require 'conn.php';
 session_start();
 
-
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 2) {
     header("Location: login.php");
     exit;
@@ -10,84 +9,81 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 2) {
 
 $tech_id = $_SESSION['user_id'];
 
-// Fetch assigned reports
-$sql = "SELECT * FROM user_report WHERE assigned_to = ?";
-$stmt = $conn->prepare($sql);
+// Fetch technician name
+$stmt = $conn->prepare("SELECT name FROM SYS_USER WHERE user_id = ?");
 $stmt->bind_param("i", $tech_id);
 $stmt->execute();
-$reports = $stmt->get_result();
+$stmt->bind_result($full_name);
+$stmt->fetch();
+$stmt->close();
+
+// Fetch report counts for each status
+$statuses = ['In Progress', 'Completed', 'Escalated', 'Need More Info'];
+$status_counts = [];
+
+foreach ($statuses as $status) {
+    $query = $conn->prepare("SELECT COUNT(*) FROM user_report WHERE assigned_to = ? AND status = ?");
+    $query->bind_param("is", $tech_id, $status);
+    $query->execute();
+    $query->bind_result($count);
+    $query->fetch();
+    $status_counts[$status] = $count;
+    $query->close();
+}
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Technician Dashboard</title>
-    <style>
-        body { font-family: Arial; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 8px; border: 1px solid #ddd; }
-        th { background-color: #f4f4f4; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h2>Technician Dashboard</h2>
-<a href="logout.php">Logout</a>
+<div class="navbar">
+    <h1>Technician Dashboard</h1>
+    <div class="nav-links">
+        <a href="tech-ass.php">View Assignments</a>
+        <a href="logout.php" class="logout">Logout</a>
+    </div>
+</div>
 
-<h3>Assigned Maintenance Reports</h3>
-<table>
-    <tr>
-        <th>ID</th>
-        <th>Title</th>
-        <th>Status</th>
-        <th>Priority</th>
-        <th>Due Date</th>
-        <th>Update</th>
-        <th>Attachments</th>
-        <th>Upload</th>
-    </tr>
-    <?php while($report = $reports->fetch_assoc()): ?>
-        <tr>
-            <td><?= $report['report_id'] ?></td>
-            <td><?= htmlspecialchars($report['title']) ?></td>
-            <td><?= htmlspecialchars($report['status']) ?></td>
-            <td><?= htmlspecialchars($report['priority']) ?></td>
-            <td><?= $report['due_date'] ?></td>
-            <td>
-                <form method="post" action="update_status.php">
-                    <input type="hidden" name="report_id" value="<?= $report['report_id'] ?>">
-                    <select name="new_status">
-                        <option value="In Progress">In Progress</option>
-                        <option value="Resolved">Resolved</option>
-                        <option value="Need More Info">Need More Info</option>
-                        <option value="Completed">Completed</option>
-                        <option value="Escalated">Escalated</option>
-                    </select>
-                    <input type="submit" value="Update">
-                </form>
-            </td>
-            <td>
-                <?php
-                $rid = $report['id'];
-                $aquery = $conn->prepare("SELECT media_id FROM attachment WHERE report_id = ?");
-                $aquery->bind_param("i", $rid);
-                $aquery->execute();
-                $attachments = $aquery->get_result();
-                while ($a = $attachments->fetch_assoc()) {
-                    echo "<a href='view_attachment.php?id={$a['media_id']}' target='_blank'>View #{$a['media_id']}</a><br>";
-                }
-                ?>
-            </td>
-            <td>
-                <form action="upload_attachment.php" method="post" enctype="multipart/form-data">
-                    <input type="hidden" name="report_id" value="<?= $report['id'] ?>">
-                    <input type="file" name="attachment">
-                    <input type="submit" value="Upload">
-                </form>
-            </td>
-        </tr>
-    <?php endwhile; ?>
-</table>
+<div class="container">
+    <h2>Welcome, <?= htmlspecialchars($full_name) ?>!</h2>
+    <p>This is your technician dashboard. From here, you can monitor your tasks and access tools quickly.</p>
+
+    <!-- Status Cards -->
+    <div class="status-cards">
+        <div class="card in-progress">
+            <h3><?= $status_counts['In Progress'] ?></h3>
+            <p>In Progress</p>
+        </div>
+        <div class="card completed">
+            <h3><?= $status_counts['Completed'] ?></h3>
+            <p>Completed</p>
+        </div>
+        <div class="card escalated">
+            <h3><?= $status_counts['Escalated'] ?></h3>
+            <p>Escalated</p>
+        </div>
+        <div class="card need-info">
+            <h3><?= $status_counts['Need More Info'] ?></h3>
+            <p>Need More Info</p>
+        </div>
+    </div>
+
+    <!-- Quick Tools -->
+    <div class="quick-tools">
+        <h3>Quick Tools</h3>
+        <div class="tool-buttons">
+            <a href="tech_ass.php">📋 View Assignments</a>
+            <a href="tech-archive.php">🗂 Archived Reports</a>
+            <a href="tech-help.php">❓ Maintenance Fundamentals</a>
+
+        </div>
+    </div>
+</div>
 
 </body>
 </html>
