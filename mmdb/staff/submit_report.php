@@ -5,7 +5,6 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-
 if (!isset($_SESSION['user_id']) || (int)$_SESSION['role'] !== 3) {
     header("Location: ../login.php");
     exit;
@@ -31,47 +30,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_report'])) {
             $report_id = $conn->insert_id;
 
             if (!empty($_FILES['attachment']['name'][0])) {
-foreach ($_FILES['attachment']['tmp_name'] as $index => $tmpName) {
-    $fileName = $_FILES['attachment']['name'][$index];
-    $fileType = $_FILES['attachment']['type'][$index];
-    $fileSize = $_FILES['attachment']['size'][$index];
-    $uploadError = $_FILES['attachment']['error'][$index];
+                $fileCount = 0;
+                foreach ($_FILES['attachment']['tmp_name'] as $index => $tmpName) {
+                    $fileName = $_FILES['attachment']['name'][$index];
+                    $fileType = $_FILES['attachment']['type'][$index];
+                    $fileSize = $_FILES['attachment']['size'][$index];
+                    $uploadError = $_FILES['attachment']['error'][$index];
 
-    error_log("Processing: $fileName | Type: $fileType | Size: $fileSize | Error: $uploadError");
+                    if ($uploadError !== UPLOAD_ERR_OK || empty($tmpName)) {
+                        continue;
+                    }
 
-    if ($uploadError !== UPLOAD_ERR_OK) {
-        error_log("Upload error $uploadError for file: $fileName");
-        continue;
-    }
+                    // Validate file type and size
+                    $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4'];
+                    $maxFileSize = 5 * 1024 * 1024; // 5MB
+                    
+                    if (!in_array($fileType, $allowedTypes) || $fileSize > $maxFileSize) {
+                        continue;
+                    }
 
-    if (!is_uploaded_file($tmpName)) {
-        error_log("Not an uploaded file: $tmpName");
-        continue;
-    }
+                    $fileData = file_get_contents($tmpName);
+                    if (!$fileData) {
+                        continue;
+                    }
 
-    $fileData = file_get_contents($tmpName);
-    if (!$fileData) {
-        error_log("file_get_contents failed for: $fileName");
-        continue;
-    }
-
-    $stmtAttach = $conn->prepare("INSERT INTO attachment (report_id, media_data, file_name, file_type) VALUES (?, ?, ?, ?)");
-    $null = NULL;
-    $stmtAttach->bind_param("ibss", $report_id, $null, $fileName, $fileType);
-    $stmtAttach->send_long_data(1, $fileData);
-    $stmtAttach->execute();
-
-    if ($stmtAttach->affected_rows > 0) {
-        error_log("Inserted $fileName successfully.");
-    } else {
-        error_log("Insert failed for $fileName");
-    }
-}
-
+                    $stmtAttach = $conn->prepare("INSERT INTO attachment (report_id, media_data, file_name, file_type) VALUES (?, ?, ?, ?)");
+                    $null = NULL;
+                    $stmtAttach->bind_param("ibss", $report_id, $null, $fileName, $fileType);
+                    $stmtAttach->send_long_data(1, $fileData);
+                    $stmtAttach->execute();
+                    $fileCount++;
+                }
+                $message = '<div class="message success">Report submitted successfully with ' . $fileCount . ' attachment(s)!</div>';
+            } else {
+                $message = '<div class="message success">Report submitted successfully!</div>';
             }
 
             $conn->commit();
-            $message = '<div class="message success">Report submitted successfully!</div>';
         } catch (Exception $e) {
             $conn->rollback();
             $message = '<div class="message error">Error: ' . $e->getMessage() . '</div>';
@@ -113,6 +108,54 @@ foreach ($_FILES['attachment']['tmp_name'] as $index => $tmpName) {
         .remove-btn { background-color: #e74c3c; border: none; color: white; font-weight: bold; padding: 6px 10px; border-radius: 4px; cursor: pointer; }
         .remove-btn:hover { background-color: #c0392b; }
         #attachment-preview img, #attachment-preview video { max-height: 80px; max-width: 80px; object-fit: cover; }
+                .attachment-container {
+            margin-bottom: 15px;
+        }
+        #file-input {
+            display: none;
+        }
+        #browse-btn {
+            background: #4CAF50;
+            margin-bottom: 10px;
+        }
+        #file-count {
+            display: block;
+            margin-bottom: 10px;
+            color: #666;
+        }
+        .file-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .file-preview-item {
+            position: relative;
+            border: 1px solid #ddd;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        .file-preview-item img, 
+        .file-preview-item video {
+            max-height: 100px;
+            max-width: 100px;
+            object-fit: contain;
+        }
+        .remove-preview {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: red;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+        }
     </style>
 </head>
 <body>
