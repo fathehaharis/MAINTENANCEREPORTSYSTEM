@@ -112,6 +112,7 @@ $reportResult = $reports->get_result();
             <select name="status" id="status" onchange="this.form.submit()">
                 <option value="">All</option>
                 <option value="Pending" <?= $filter_status == 'Pending' ? 'selected' : '' ?>>Pending</option>
+                <option value="Assigned" <?= $filter_status == 'Assigned' ? 'selected' : '' ?>>Assigned</option>
                 <option value="In Progress" <?= $filter_status == 'In Progress' ? 'selected' : '' ?>>In Progress</option>
                 <option value="Completed" <?= $filter_status == 'Completed' ? 'selected' : '' ?>>Completed</option>
             </select>

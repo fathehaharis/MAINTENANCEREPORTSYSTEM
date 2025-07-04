@@ -2,18 +2,19 @@
 session_start();
 require '../conn.php';
 
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 3) {
+// Only allow technician
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 2) {
     header("Location: ../login.php");
     exit;
 }
 
-$user_id = $_SESSION['user_id'];
+$tech_id = $_SESSION['user_id'];
 $message = '';
 $password_message = '';
 
 // Fetch user info from DB
 $stmt = $conn->prepare("SELECT name, email FROM sys_user WHERE user_id = ?");
-$stmt->bind_param("i", $user_id);
+$stmt->bind_param("i", $tech_id);
 $stmt->execute();
 $stmt->bind_result($name, $email);
 $stmt->fetch();
@@ -28,24 +29,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
         $message = '<div class="message error">Name and Email cannot be empty.</div>';
     } else {
         $stmt = $conn->prepare("UPDATE sys_user SET name = ?, email = ? WHERE user_id = ?");
-        $stmt->bind_param("ssi", $new_name, $new_email, $user_id);
+        $stmt->bind_param("ssi", $new_name, $new_email, $tech_id);
         if ($stmt->execute()) {
             $_SESSION['name'] = $new_name;
             $message = '<div class="message success">Profile updated successfully.</div>';
+            $name = $new_name;
+            $email = $new_email;
         } else {
             $message = '<div class="message error">Error updating profile.</div>';
         }
     }
 }
 
-// Handle password change (plain text -- not recommended for production)
+// Handle password change (plain text for demonstration; hash in real apps)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
     $current_password = $_POST['current_password'];
     $new_password     = $_POST['new_password'];
     $confirm_password = $_POST['confirm_password'];
 
     $stmt = $conn->prepare("SELECT password FROM sys_user WHERE user_id = ?");
-    $stmt->bind_param("i", $user_id);
+    $stmt->bind_param("i", $tech_id);
     $stmt->execute();
     $stmt->bind_result($plain_password_db);
     $stmt->fetch();
@@ -57,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
         $password_message = '<div class="message error">New passwords do not match.</div>';
     } else {
         $stmt = $conn->prepare("UPDATE sys_user SET password = ? WHERE user_id = ?");
-        $stmt->bind_param("si", $new_password, $user_id);
+        $stmt->bind_param("si", $new_password, $tech_id);
         if ($stmt->execute()) {
             $password_message = '<div class="message success">Password changed successfully.</div>';
         } else {
@@ -66,12 +69,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>My Profile - Staff</title>
+    <title>Technician Profile - MRS</title>
     <style>
         body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f7fafc; }
         header.staff-header { background: #4a90e2; color: white; padding: 1.3rem 0; font-size: 2rem; font-weight: 700; text-align: center; position: fixed; top: 0; width: 100%; z-index: 1000; }
@@ -84,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
         .sidebar .logout-link { margin-top: auto; margin-bottom: 2rem; padding-left: 2rem; }
         .sidebar .logout-link a { color: #ffbdbd; background: #a94442; font-weight: bold; text-decoration: none; padding: 10px 16px; border-radius: 6px; display: inline-block; }
         .main-content { margin-left: 220px; padding-top: 90px; padding-bottom: 2rem; min-height: 100vh; background: #f7fafc; }
-        .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+        .container { max-width: 700px; margin: 0 auto; padding: 20px; }
         .card-box { background: #ffffff; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         .card-box h2 { font-size: 1.5rem; margin-bottom: 15px; color: #253444; }
         .form-group { margin-bottom: 15px; }
@@ -92,20 +94,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
         .form-group input[type="text"], .form-group input[type="email"], .form-group input[type="password"] {
             width: 100%; padding: 10px; font-size: 1rem; border-radius: 6px; border: 1px solid #ccc;
         }
-        .input-wrapper {
-            position: relative;
-        }
+        .input-wrapper { position: relative; }
         .toggle-password {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 1.15rem;
-            color: #888;
-            padding: 0 5px;
+            position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; cursor: pointer; font-size: 1.15rem; color: #888; padding: 0 5px;
         }
         .toggle-password:active { color: #253444; }
         .btn { background: #4285F4; color: white; padding: 10px 20px; border: none; border-radius: 6px; font-size: 15px; cursor: pointer; }
@@ -116,24 +108,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
     </style>
 </head>
 <body>
-
-<header class="staff-header">Maintenance Report System - Staff</header>
-
+<header class="staff-header">Maintenance Report System - Technician</header>
 <aside class="sidebar">
-    <div class="sidebar-header">MRS Staff</div>
+    <div class="sidebar-header">MRS Technician</div>
     <nav>
-        <a href="staff_dashboard.php" class="active">Dashboard</a>
-        <div class="sidebar-section-title">My Profile</div>
-        <a href="profile.php">Profile</a>
-        <div class="sidebar-section-title">Report Management</div>
-        <a href="submit_report.php">Submit Report</a>
-        <a href="view_report.php">My Report</a>
+        <a href="tech_dashboard.php">Dashboard</a>
+        <a href="tech_profile.php">Profile</a>
+        <div class="sidebar-section-title">Task</div>
+        <a href="tech_ass.php">Assignments</a>
+        <a href="tech_archive.php">Archived Reports</a>
+        <div class="sidebar-section-title">Help</div>
+        <a href="https://www.annamalaiuniversity.ac.in/studport/download/engg/civil%20and%20structural/Building%20Repairs%20and%20Maintenance.pdf" target="_blank">Maintenance Guide</a>
     </nav>
     <div class="logout-link">
         <a href="../logout.php">Logout</a>
     </div>
 </aside>
-
 <div class="main-content">
     <div class="container">
         <div class="card-box">
@@ -151,7 +141,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
                 <button type="submit" name="update_profile" class="btn">Update Profile</button>
             </form>
         </div>
-
         <div class="card-box">
             <h2>Change Password</h2>
             <?= $password_message ?>
