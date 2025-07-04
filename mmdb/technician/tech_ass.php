@@ -64,6 +64,7 @@ $reports = $stmt->get_result();
     <div class="sidebar-header">MRS Technician</div>
     <nav>
         <a href="tech_dashboard.php" class="active">Dashboard</a>
+        <a href="tech_profile.php">Profile</a>
         <div class="sidebar-section-title">Task</div>
         <a href="tech_ass.php">Assignments</a>
         <a href="tech_archive.php">Archived Reports</a>
