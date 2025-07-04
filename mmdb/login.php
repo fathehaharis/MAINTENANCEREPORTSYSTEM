@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         header("Location: tech_dashboard.php");
                         break;
                     case 3:
-                        header("Location: staff_dashboard.php");
+                        header("Location: staff/staff_dashboard.php");
                         break;
                     default:
                         $errors[] = "Unknown role. Please contact the administrator.";

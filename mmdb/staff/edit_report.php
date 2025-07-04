@@ -1,0 +1,220 @@
+<?php
+session_start();
+require '../conn.php';
+
+if (!isset($_SESSION['user_id']) || (int)$_SESSION['role'] !== 3) {
+    header("Location: ../login.php");
+    exit;
+}
+
+$user_id = $_SESSION['user_id'];
+$report_id = isset($_GET['report_id']) ? (int)$_GET['report_id'] : 0;
+
+// Fetch report details
+$stmt = $conn->prepare("SELECT * FROM user_report WHERE report_id = ? AND submitted_by = ? AND status = 'Pending'");
+$stmt->bind_param("ii", $report_id, $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$report = $result->fetch_assoc();
+$stmt->close();
+
+if (!$report) {
+    echo "<p>Invalid or non-editable report.</p>";
+    exit;
+}
+
+// Fetch existing attachments
+$stmt = $conn->prepare("SELECT media_id, file_name, file_type FROM attachment WHERE report_id = ?");
+$stmt->bind_param("i", $report_id);
+$stmt->execute();
+$attachments = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
+
+$message = '';
+
+// Update report if form submitted
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_report'])) {
+    $title = trim($_POST['title']);
+    $description = trim($_POST['description']);
+    $location = trim($_POST['location']);
+
+    if (empty($title) || empty($description) || empty($location)) {
+        $message = '<div class="message error">All fields are required.</div>';
+    } else {
+        $stmt = $conn->prepare("UPDATE user_report SET title = ?, description = ?, location = ? WHERE report_id = ?");
+        $stmt->bind_param("sssi", $title, $description, $location, $report_id);
+        $stmt->execute();
+
+        // Delete selected attachments
+        if (!empty($_POST['delete_attachments'])) {
+            foreach ($_POST['delete_attachments'] as $media_id) {
+                $stmtDel = $conn->prepare("DELETE FROM attachment WHERE media_id = ? AND report_id = ?");
+                $stmtDel->bind_param("ii", $media_id, $report_id);
+                $stmtDel->execute();
+            }
+        }
+
+        // Handle new attachments
+        if (!empty($_FILES['attachments']['name'][0])) {
+            foreach ($_FILES['attachments']['tmp_name'] as $index => $tmpName) {
+                $fileData = file_get_contents($tmpName);
+                $fileName = $_FILES['attachments']['name'][$index];
+                $fileType = $_FILES['attachments']['type'][$index];
+
+                $stmtAttach = $conn->prepare("INSERT INTO attachment (report_id, media_data, file_name, file_type) VALUES (?, ?, ?, ?)");
+                $null = NULL;
+                $stmtAttach->bind_param("ibss", $report_id, $null, $fileName, $fileType);
+                $stmtAttach->send_long_data(1, $fileData);
+                $stmtAttach->execute();
+            }
+        }
+
+        $message = '<div class="message success">Report updated successfully.</div>';
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Edit Report - MRS</title>
+  <style>
+    body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f7fafc; }
+    header.staff-header { background: #4a90e2; color: white; padding: 1.3rem 0; font-size: 2rem; font-weight: 700; text-align: center; position: fixed; top: 0; width: 100%; z-index: 1000; }
+    .sidebar { position: fixed; top: 0; left: 0; width: 220px; height: 100vh; background: #253444; color: #fff; display: flex; flex-direction: column; z-index: 1100; }
+    .sidebar-header { padding: 2rem 1rem 1rem 2rem; font-size: 1.3rem; font-weight: bold; background: #1d2937; }
+    .sidebar nav { flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 1.5rem 0.5rem 1.5rem 2rem; }
+    .sidebar-section-title { font-size: 1rem; margin-top: 1.5rem; margin-bottom: 0.7rem; font-weight: bold; color: #b8e0fc; }
+    .sidebar nav a { color: #cdd9e5; text-decoration: none; font-size: 1.05rem; padding: 9px 16px; border-radius: 6px; transition: background 0.2s; font-weight: 500; display: block; }
+    .sidebar nav a.active, .sidebar nav a:hover { background: #4285F4; color: #fff; }
+    .sidebar .logout-link { margin-top: auto; margin-bottom: 2rem; padding-left: 2rem; }
+    .sidebar .logout-link a { color: #ffbdbd; background: #a94442; font-weight: bold; text-decoration: none; padding: 10px 16px; border-radius: 6px; display: inline-block; }
+    .main-content { margin-left: 220px; padding-top: 70px; padding-bottom: 2rem; min-height: 100vh; }
+    .container { max-width: 900px; margin: 0 auto; padding: 20px; background: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    h2 { color: #253444; margin-bottom: 20px; font-size: 1.5rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px;
+    }
+    .form-group textarea { resize: vertical; min-height: 100px; }
+    .message { padding: 10px 15px; margin-bottom: 20px; border-radius: 6px; }
+    .message.success { background: #d4edda; color: #155724; }
+    .message.error { background: #f8d7da; color: #721c24; }
+    button, #micBtn { background: #4285F4; color: white; padding: 10px 18px; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+    button:hover, #micBtn:hover { background: #2c6cd2; }
+    #attachment-preview img, .existing-img { max-height: 80px; max-width: 80px; object-fit: cover; margin-right: 8px; margin-bottom: 6px; }
+    .remove-link { color: red; font-size: 0.9rem; text-decoration: underline; margin-left: 6px; cursor: pointer; }
+  </style>
+</head>
+<body>
+<header class="staff-header">Maintenance Report System - Staff</header>
+<aside class="sidebar">
+  <div class="sidebar-header">MRS Staff</div>
+  <nav>
+    <a href="staff_dashboard.php">Dashboard</a>
+    <div class="sidebar-section-title">My Profile</div>
+    <a href="profile.php">Profile</a>
+    <div class="sidebar-section-title">Report Management</div>
+    <a href="submit_report.php">Submit Report</a>
+    <a href="view_report.php">My Report</a>
+  </nav>
+  <div class="logout-link">
+    <a href="../logout.php">Logout</a>
+  </div>
+</aside>
+<div class="main-content">
+  <div class="container">
+    <h2>Edit Maintenance Report</h2>
+    <?= $message ?>
+    <form method="POST" enctype="multipart/form-data">
+      <div class="form-group">
+        <label for="title">Title<span style="color:red;">*</span></label>
+        <input type="text" id="title" name="title" value="<?= htmlspecialchars($report['title']) ?>" required>
+      </div>
+      <div class="form-group">
+        <label for="description">Description<span style="color:red;">*</span></label>
+        <textarea id="description" name="description" required><?= htmlspecialchars($report['description']) ?></textarea>
+        <div style="margin-top: 8px;">
+          <label for="lang-select">Speech Language:</label>
+          <select id="lang-select">
+            <option value="en-US">English</option>
+            <option value="ms-MY">Malay</option>
+          </select>
+          <button type="button" id="micBtn">🎤 Speak</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="location">Location<span style="color:red;">*</span></label>
+        <input type="text" id="location" name="location" value="<?= htmlspecialchars($report['location']) ?>" required>
+      </div>
+      <div class="form-group">
+        <label>Current Attachments</label><br>
+        <?php foreach ($attachments as $att): ?>
+          <?php if (strpos($att['file_type'], 'image/') === 0): ?>
+            <div style="display: inline-block; position: relative;">
+              <img class="existing-img" src="../attachment.php?media_id=<?= $att['media_id'] ?>" alt="Attachment">
+              <label class="remove-link">
+                <input type="checkbox" name="delete_attachments[]" value="<?= $att['media_id'] ?>"> Delete
+              </label>
+            </div>
+          <?php else: ?>
+            <div>
+              <a href="../attachment.php?media_id=<?= $att['media_id'] ?>" target="_blank">Download <?= htmlspecialchars($att['file_name']) ?></a>
+              <label class="remove-link">
+                <input type="checkbox" name="delete_attachments[]" value="<?= $att['media_id'] ?>"> Delete
+              </label>
+            </div>
+          <?php endif; ?>
+        <?php endforeach; ?>
+      </div>
+      <div class="form-group">
+        <label for="attachments">Add More Attachment(s)</label>
+        <input type="file" id="attachment" name="attachments[]" multiple>
+        <div id="attachment-preview"></div>
+      </div>
+      <button type="submit" name="update_report">Update Report</button>
+    </form>
+  </div>
+</div>
+<script>
+const fileInput = document.getElementById('attachment');
+const previewContainer = document.getElementById('attachment-preview');
+fileInput.addEventListener('change', function () {
+  previewContainer.innerHTML = '';
+  for (const file of this.files) {
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        previewContainer.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+});
+
+const micBtn = document.getElementById('micBtn');
+const descField = document.getElementById('description');
+const langSelect = document.getElementById('lang-select');
+if (micBtn && 'webkitSpeechRecognition' in window) {
+  const recognition = new webkitSpeechRecognition();
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  micBtn.onclick = function () {
+    recognition.lang = langSelect.value;
+    recognition.start();
+  };
+  recognition.onresult = function (event) {
+    const transcript = event.results[0][0].transcript;
+    descField.value += transcript + ' ';
+  };
+  recognition.onerror = function (e) {
+    alert("Speech recognition error: " + e.error);
+  };
+}
+</script>
+</body>
+</html>
