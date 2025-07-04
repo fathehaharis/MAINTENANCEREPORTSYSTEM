@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     }
 }
 
-// Handle password change
+// Handle password change (plain text -- not recommended for production)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
     $current_password = $_POST['current_password'];
     $new_password     = $_POST['new_password'];
@@ -47,18 +47,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
     $stmt = $conn->prepare("SELECT password FROM sys_user WHERE user_id = ?");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
-    $stmt->bind_result($hashed_password_db);
+    $stmt->bind_result($plain_password_db);
     $stmt->fetch();
     $stmt->close();
 
-    if (!password_verify($current_password, $hashed_password_db)) {
+    if ($current_password !== $plain_password_db) {
         $password_message = '<div class="message error">Current password is incorrect.</div>';
     } elseif ($new_password !== $confirm_password) {
         $password_message = '<div class="message error">New passwords do not match.</div>';
     } else {
-        $new_hashed = password_hash($new_password, PASSWORD_DEFAULT);
         $stmt = $conn->prepare("UPDATE sys_user SET password = ? WHERE user_id = ?");
-        $stmt->bind_param("si", $new_hashed, $user_id);
+        $stmt->bind_param("si", $new_password, $user_id);
         if ($stmt->execute()) {
             $password_message = '<div class="message success">Password changed successfully.</div>';
         } else {
@@ -93,6 +92,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
         .form-group input[type="text"], .form-group input[type="email"], .form-group input[type="password"] {
             width: 100%; padding: 10px; font-size: 1rem; border-radius: 6px; border: 1px solid #ccc;
         }
+        .input-wrapper {
+            position: relative;
+        }
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.15rem;
+            color: #888;
+            padding: 0 5px;
+        }
+        .toggle-password:active { color: #253444; }
         .btn { background: #4285F4; color: white; padding: 10px 20px; border: none; border-radius: 6px; font-size: 15px; cursor: pointer; }
         .btn:hover { background: #3367D6; }
         .message { padding: 12px; border-radius: 5px; margin-bottom: 20px; }
@@ -140,24 +155,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
         <div class="card-box">
             <h2>Change Password</h2>
             <?= $password_message ?>
-            <form method="POST">
+            <form method="POST" autocomplete="off">
                 <div class="form-group">
                     <label for="current_password">Current Password</label>
-                    <input type="password" id="current_password" name="current_password" required>
+                    <div class="input-wrapper">
+                        <input type="password" id="current_password" name="current_password" required>
+                        <button type="button" class="toggle-password" data-target="current_password" tabindex="-1">&#128065;</button>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="new_password">New Password</label>
-                    <input type="password" id="new_password" name="new_password" required>
+                    <div class="input-wrapper">
+                        <input type="password" id="new_password" name="new_password" required>
+                        <button type="button" class="toggle-password" data-target="new_password" tabindex="-1">&#128065;</button>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="confirm_password">Confirm New Password</label>
-                    <input type="password" id="confirm_password" name="confirm_password" required>
+                    <div class="input-wrapper">
+                        <input type="password" id="confirm_password" name="confirm_password" required>
+                        <button type="button" class="toggle-password" data-target="confirm_password" tabindex="-1">&#128065;</button>
+                    </div>
                 </div>
                 <button type="submit" name="change_password" class="btn">Change Password</button>
             </form>
         </div>
     </div>
 </div>
-
+<script>
+document.querySelectorAll('.toggle-password').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var targetId = this.getAttribute('data-target');
+        var input = document.getElementById(targetId);
+        if (input.type === "password") {
+            input.type = "text";
+            this.innerHTML = "&#128586;"; // Hide icon
+        } else {
+            input.type = "password";
+            this.innerHTML = "&#128065;"; // Eye icon
+        }
+    });
+});
+</script>
 </body>
 </html>

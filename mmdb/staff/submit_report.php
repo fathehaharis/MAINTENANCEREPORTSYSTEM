@@ -5,6 +5,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+// Role 3 = STAFF
 if (!isset($_SESSION['user_id']) || (int)$_SESSION['role'] !== 3) {
     header("Location: ../login.php");
     exit;
@@ -29,22 +30,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_report'])) {
             $stmt->execute();
             $report_id = $conn->insert_id;
 
+            $fileCount = 0;
             if (!empty($_FILES['attachment']['name'][0])) {
-                $fileCount = 0;
                 foreach ($_FILES['attachment']['tmp_name'] as $index => $tmpName) {
                     $fileName = $_FILES['attachment']['name'][$index];
                     $fileType = $_FILES['attachment']['type'][$index];
                     $fileSize = $_FILES['attachment']['size'][$index];
                     $uploadError = $_FILES['attachment']['error'][$index];
 
-                    if ($uploadError !== UPLOAD_ERR_OK || empty($tmpName)) {
+                    // DEBUG: Log upload errors (comment out in production)
+                    if ($uploadError !== UPLOAD_ERR_OK) {
+                        error_log("Upload error for file $fileName: $uploadError");
                         continue;
                     }
 
                     // Validate file type and size
                     $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4'];
-                    $maxFileSize = 5 * 1024 * 1024; // 5MB
-                    
+                    $maxFileSize = 50 * 1024 * 1024; // 50MB
+
                     if (!in_array($fileType, $allowedTypes) || $fileSize > $maxFileSize) {
                         continue;
                     }
@@ -59,14 +62,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_report'])) {
                     $stmtAttach->bind_param("ibss", $report_id, $null, $fileName, $fileType);
                     $stmtAttach->send_long_data(1, $fileData);
                     $stmtAttach->execute();
+                    $stmtAttach->close();
                     $fileCount++;
                 }
-                $message = '<div class="message success">Report submitted successfully with ' . $fileCount . ' attachment(s)!</div>';
-            } else {
-                $message = '<div class="message success">Report submitted successfully!</div>';
             }
 
             $conn->commit();
+            $message = '<div class="message success">Report submitted successfully' . ($fileCount ? " with $fileCount attachment(s)" : '') . '!</div>';
         } catch (Exception $e) {
             $conn->rollback();
             $message = '<div class="message error">Error: ' . $e->getMessage() . '</div>';
@@ -102,60 +104,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_report'])) {
         .message { padding: 10px 15px; margin-bottom: 20px; border-radius: 6px; }
         .message.success { background: #d4edda; color: #155724; }
         .message.error { background: #f8d7da; color: #721c24; }
-        button, #micBtn, #add-more-btn { background: #4285F4; color: white; padding: 10px 18px; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; }
-        button:hover, #micBtn:hover, #add-more-btn:hover { background: #2c6cd2; }
+        button, #micBtn, #addMoreBtn { background: #4285F4; color: white; padding: 10px 18px; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+        button:hover, #micBtn:hover, #addMoreBtn:hover { background: #2c6cd2; }
         .attachment-wrapper { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
         .remove-btn { background-color: #e74c3c; border: none; color: white; font-weight: bold; padding: 6px 10px; border-radius: 4px; cursor: pointer; }
         .remove-btn:hover { background-color: #c0392b; }
         #attachment-preview img, #attachment-preview video { max-height: 80px; max-width: 80px; object-fit: cover; }
-                .attachment-container {
-            margin-bottom: 15px;
-        }
-        #file-input {
-            display: none;
-        }
-        #browse-btn {
-            background: #4CAF50;
-            margin-bottom: 10px;
-        }
-        #file-count {
-            display: block;
-            margin-bottom: 10px;
-            color: #666;
-        }
-        .file-preview {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .file-preview-item {
-            position: relative;
-            border: 1px solid #ddd;
-            padding: 5px;
-            border-radius: 4px;
-        }
-        .file-preview-item img, 
-        .file-preview-item video {
-            max-height: 100px;
-            max-width: 100px;
-            object-fit: contain;
-        }
-        .remove-preview {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: red;
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 12px;
-        }
     </style>
 </head>
 <body>
@@ -178,14 +132,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_report'])) {
     <div class="container">
         <h2>Submit Maintenance Report</h2>
         <?= $message ?>
-        <form method="POST" enctype="multipart/form-data">
+        <form method="POST" enctype="multipart/form-data" autocomplete="off">
             <div class="form-group">
                 <label for="title">Title<span style="color:red;">*</span></label>
-                <input type="text" id="title" name="title" required>
+                <input type="text" id="title" name="title" maxlength="128" required>
             </div>
             <div class="form-group">
                 <label for="description">Description<span style="color:red;">*</span></label>
-                <textarea id="description" name="description" required></textarea>
+                <textarea id="description" name="description" maxlength="2000" required></textarea>
                 <div style="margin-top: 8px;">
                     <label for="lang-select">Speech Language:</label>
                     <select id="lang-select">
@@ -197,22 +151,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_report'])) {
             </div>
             <div class="form-group">
                 <label for="location">Location<span style="color:red;">*</span></label>
-                <input type="text" id="location" name="location" required>
+                <input type="text" id="location" name="location" maxlength="255" required>
             </div>
             <div class="form-group">
-                <label>Attachments</label>
+                <label>Attachments (Image/MP4, max 50MB each, max 20 files)</label>
                 <div id="attachment-fields">
                     <div class="attachment-wrapper">
                         <input type="file" name="attachment[]" class="attachment-field" accept="image/*,video/mp4">
+                        <button type="button" class="remove-btn" style="display:none;">❌</button>
                     </div>
                 </div>
+                <button type="button" id="addMoreBtn">Add More Attachments</button>
                 <div id="attachment-preview" style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;"></div>
             </div>
             <button type="submit" name="submit_report">Submit Report</button>
         </form>
     </div>
 </div>
-
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const micBtn = document.getElementById('micBtn');
@@ -220,7 +175,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const langSelect = document.getElementById('lang-select');
     const previewContainer = document.getElementById('attachment-preview');
     const attachmentFields = document.getElementById('attachment-fields');
+    const addMoreBtn = document.getElementById('addMoreBtn');
+    const maxFiles = 20;
 
+    // Speech recognition
     if ('webkitSpeechRecognition' in window && micBtn) {
         const recognition = new webkitSpeechRecognition();
         recognition.continuous = false;
@@ -241,8 +199,11 @@ document.addEventListener("DOMContentLoaded", function () {
         };
     }
 
-    const handleFileInput = (wrapper, input) => {
+    // File input preview & removal
+    function handleFileInput(wrapper, input) {
         input.addEventListener('change', () => {
+            // Remove previous preview for this wrapper
+            document.querySelectorAll(`#attachment-preview [data-wrapper="${wrapper.dataset.id}"]`).forEach(el => el.remove());
             if (input.files && input.files[0]) {
                 const file = input.files[0];
                 const reader = new FileReader();
@@ -250,22 +211,22 @@ document.addEventListener("DOMContentLoaded", function () {
                 reader.onload = function (e) {
                     const previewBox = document.createElement('div');
                     previewBox.style.position = 'relative';
+                    previewBox.dataset.wrapper = wrapper.dataset.id;
 
-                    let mediaElement;
+                    let media;
                     if (file.type.startsWith('image/')) {
-                        mediaElement = document.createElement('img');
+                        media = document.createElement('img');
                     } else if (file.type === 'video/mp4') {
-                        mediaElement = document.createElement('video');
-                        mediaElement.controls = true;
+                        media = document.createElement('video');
+                        media.controls = true;
                     }
 
-                    if (mediaElement) {
-                        mediaElement.src = e.target.result;
-                        mediaElement.style.maxHeight = '250px';
-                        mediaElement.style.maxWidth = '250px';
-                        mediaElement.style.objectFit = 'cover';
-                        mediaElement.dataset.wrapper = wrapper.dataset.id;
-                        previewBox.appendChild(mediaElement);
+                    if (media) {
+                        media.src = e.target.result;
+                        media.style.maxHeight = '250px';
+                        media.style.maxWidth = '250px';
+                        media.style.objectFit = 'cover';
+                        previewBox.appendChild(media);
 
                         const delBtn = document.createElement('button');
                         delBtn.innerHTML = '❌';
@@ -286,14 +247,24 @@ document.addEventListener("DOMContentLoaded", function () {
                 };
 
                 reader.readAsDataURL(file);
+
+                // Show remove button in wrapper if more than one
+                if (attachmentFields.children.length > 1) {
+                    wrapper.querySelector('.remove-btn').style.display = '';
+                }
             }
         });
-    };
+    }
 
-    const createAttachmentInput = () => {
+    // Add attachment input
+    function createAttachmentInput() {
+        if (attachmentFields.children.length >= maxFiles) {
+            alert("Maximum " + maxFiles + " files allowed.");
+            return;
+        }
         const wrapper = document.createElement('div');
         wrapper.classList.add('attachment-wrapper');
-        wrapper.dataset.id = 'wrapper-' + Date.now();
+        wrapper.dataset.id = 'wrapper-' + Date.now() + '-' + Math.floor(Math.random()*10000);
 
         const input = document.createElement('input');
         input.type = 'file';
@@ -307,23 +278,29 @@ document.addEventListener("DOMContentLoaded", function () {
         removeBtn.textContent = '❌';
 
         removeBtn.onclick = () => {
-            document.querySelectorAll(`#attachment-preview [data-wrapper="${wrapper.dataset.id}"]`).forEach(el => el.parentElement.remove());
+            document.querySelectorAll(`#attachment-preview [data-wrapper="${wrapper.dataset.id}"]`).forEach(el => el.remove());
             wrapper.remove();
         };
+        removeBtn.style.display = '';
 
         wrapper.appendChild(input);
         wrapper.appendChild(removeBtn);
         attachmentFields.appendChild(wrapper);
 
         handleFileInput(wrapper, input);
-    };
+    }
 
+    // Initial input
     document.querySelectorAll('.attachment-field').forEach((input, idx) => {
         const wrapper = input.closest('.attachment-wrapper');
         wrapper.dataset.id = 'wrapper-init-' + idx;
+        if (idx === 0) {
+            wrapper.querySelector('.remove-btn').style.display = 'none';
+        }
         handleFileInput(wrapper, input);
     });
 
+    // Add more
     addMoreBtn.addEventListener('click', createAttachmentInput);
 });
 </script>
