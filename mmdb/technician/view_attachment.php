@@ -1,5 +1,5 @@
 <?php
-require 'conn.php';
+require '../conn.php';
 session_start();
 
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {

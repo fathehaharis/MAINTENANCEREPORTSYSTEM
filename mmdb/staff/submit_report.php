@@ -1,6 +1,10 @@
 <?php
 session_start();
 require '../conn.php';
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 
 if (!isset($_SESSION['user_id']) || (int)$_SESSION['role'] !== 3) {
     header("Location: ../login.php");
@@ -27,17 +31,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_report'])) {
             $report_id = $conn->insert_id;
 
             if (!empty($_FILES['attachment']['name'][0])) {
-                foreach ($_FILES['attachment']['tmp_name'] as $index => $tmpName) {
-                    $fileData = file_get_contents($tmpName);
-                    $fileName = $_FILES['attachment']['name'][$index];
-                    $fileType = $_FILES['attachment']['type'][$index];
+foreach ($_FILES['attachment']['tmp_name'] as $index => $tmpName) {
+    $fileName = $_FILES['attachment']['name'][$index];
+    $fileType = $_FILES['attachment']['type'][$index];
+    $fileSize = $_FILES['attachment']['size'][$index];
+    $uploadError = $_FILES['attachment']['error'][$index];
 
-                    $stmtAttach = $conn->prepare("INSERT INTO attachment (report_id, media_data, file_name, file_type) VALUES (?, ?, ?, ?)");
-                    $null = NULL;
-                    $stmtAttach->bind_param("ibss", $report_id, $null, $fileName, $fileType);
-                    $stmtAttach->send_long_data(1, $fileData);
-                    $stmtAttach->execute();
-                }
+    error_log("Processing: $fileName | Type: $fileType | Size: $fileSize | Error: $uploadError");
+
+    if ($uploadError !== UPLOAD_ERR_OK) {
+        error_log("Upload error $uploadError for file: $fileName");
+        continue;
+    }
+
+    if (!is_uploaded_file($tmpName)) {
+        error_log("Not an uploaded file: $tmpName");
+        continue;
+    }
+
+    $fileData = file_get_contents($tmpName);
+    if (!$fileData) {
+        error_log("file_get_contents failed for: $fileName");
+        continue;
+    }
+
+    $stmtAttach = $conn->prepare("INSERT INTO attachment (report_id, media_data, file_name, file_type) VALUES (?, ?, ?, ?)");
+    $null = NULL;
+    $stmtAttach->bind_param("ibss", $report_id, $null, $fileName, $fileType);
+    $stmtAttach->send_long_data(1, $fileData);
+    $stmtAttach->execute();
+
+    if ($stmtAttach->affected_rows > 0) {
+        error_log("Inserted $fileName successfully.");
+    } else {
+        error_log("Insert failed for $fileName");
+    }
+}
+
             }
 
             $conn->commit();
@@ -82,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_report'])) {
         .attachment-wrapper { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
         .remove-btn { background-color: #e74c3c; border: none; color: white; font-weight: bold; padding: 6px 10px; border-radius: 4px; cursor: pointer; }
         .remove-btn:hover { background-color: #c0392b; }
-        #attachment-preview img { max-height: 80px; max-width: 80px; object-fit: cover; }
+        #attachment-preview img, #attachment-preview video { max-height: 80px; max-width: 80px; object-fit: cover; }
     </style>
 </head>
 <body>
@@ -130,17 +160,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_report'])) {
                 <label>Attachments</label>
                 <div id="attachment-fields">
                     <div class="attachment-wrapper">
-                        <input type="file" name="attachment[]" class="attachment-field">
-                        <button type="button" class="remove-btn">❌</button>
+                        <input type="file" name="attachment[]" class="attachment-field" accept="image/*,video/mp4">
                     </div>
                 </div>
-                <button type="button" id="add-more-btn">+ Add More</button>
                 <div id="attachment-preview" style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;"></div>
             </div>
             <button type="submit" name="submit_report">Submit Report</button>
         </form>
     </div>
 </div>
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const micBtn = document.getElementById('micBtn');
@@ -148,7 +177,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const langSelect = document.getElementById('lang-select');
     const previewContainer = document.getElementById('attachment-preview');
     const attachmentFields = document.getElementById('attachment-fields');
-    const addMoreBtn = document.getElementById('add-more-btn');
 
     if ('webkitSpeechRecognition' in window && micBtn) {
         const recognition = new webkitSpeechRecognition();
@@ -172,17 +200,49 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const handleFileInput = (wrapper, input) => {
         input.addEventListener('change', () => {
-            if (input.files && input.files[0] && input.files[0].type.startsWith('image/')) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
                 const reader = new FileReader();
+
                 reader.onload = function (e) {
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.style.maxWidth = '100px';
-                    img.style.marginRight = '10px';
-                    img.dataset.wrapper = wrapper.dataset.id;
-                    previewContainer.appendChild(img);
+                    const previewBox = document.createElement('div');
+                    previewBox.style.position = 'relative';
+
+                    let mediaElement;
+                    if (file.type.startsWith('image/')) {
+                        mediaElement = document.createElement('img');
+                    } else if (file.type === 'video/mp4') {
+                        mediaElement = document.createElement('video');
+                        mediaElement.controls = true;
+                    }
+
+                    if (mediaElement) {
+                        mediaElement.src = e.target.result;
+                        mediaElement.style.maxHeight = '250px';
+                        mediaElement.style.maxWidth = '250px';
+                        mediaElement.style.objectFit = 'cover';
+                        mediaElement.dataset.wrapper = wrapper.dataset.id;
+                        previewBox.appendChild(mediaElement);
+
+                        const delBtn = document.createElement('button');
+                        delBtn.innerHTML = '❌';
+                        delBtn.type = 'button';
+                        delBtn.classList.add('remove-btn');
+                        delBtn.style.position = 'absolute';
+                        delBtn.style.top = '0';
+                        delBtn.style.right = '0';
+
+                        delBtn.onclick = () => {
+                            previewBox.remove();
+                            wrapper.remove();
+                        };
+
+                        previewBox.appendChild(delBtn);
+                        previewContainer.appendChild(previewBox);
+                    }
                 };
-                reader.readAsDataURL(input.files[0]);
+
+                reader.readAsDataURL(file);
             }
         });
     };
@@ -196,6 +256,7 @@ document.addEventListener("DOMContentLoaded", function () {
         input.type = 'file';
         input.name = 'attachment[]';
         input.classList.add('attachment-field');
+        input.accept = 'image/*,video/mp4';
 
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
@@ -203,7 +264,7 @@ document.addEventListener("DOMContentLoaded", function () {
         removeBtn.textContent = '❌';
 
         removeBtn.onclick = () => {
-            document.querySelectorAll(`#attachment-preview img[data-wrapper="${wrapper.dataset.id}"]`).forEach(img => img.remove());
+            document.querySelectorAll(`#attachment-preview [data-wrapper="${wrapper.dataset.id}"]`).forEach(el => el.parentElement.remove());
             wrapper.remove();
         };
 
