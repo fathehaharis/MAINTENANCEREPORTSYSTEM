@@ -137,7 +137,6 @@ if (isset($_POST['delete_picture']) && $profilepic !== 'profilepic/default.jpeg'
 
 <header class="staff-header">Maintenance Report System - Technician</header>
 <aside class="sidebar">
-<!-- Sidebar Technician Info (Combined into One Div) -->
 <div class="sidebar-header" style="display: flex; flex-direction: column; align-items: center; padding: 1.5rem 1rem;">
     <img src="../<?= htmlspecialchars($profilepic) ?>" alt="Profile Picture"
          style="width: 70px; height: 70px; object-fit: cover; border-radius: 50%; border: 2px solid #ccc; box-shadow: 0 0 4px rgba(0,0,0,0.15); margin-bottom: 8px;">
