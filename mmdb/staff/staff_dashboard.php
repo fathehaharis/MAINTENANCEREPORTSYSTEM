@@ -33,21 +33,33 @@ $name = htmlspecialchars($_SESSION['name']);
         .card-box h2 { font-size: 1.5rem; margin-bottom: 10px; color: #253444; }
         .card-box p { font-size: 1rem; color: #555; }
     </style>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
 </head>
 <body>
 <header class="staff-header">Maintenance Report System - Staff Dashboard</header>
 <aside class="sidebar">
     <div class="sidebar-header">MRS Staff</div>
     <nav>
-        <a href="staff_dashboard.php" class="active">Dashboard</a>
+        <a href="staff_dashboard.php" class="active">
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+        </a>
         <div class="sidebar-section-title">My Profile</div>
-        <a href="profile.php">Profile</a>
-        <div class="sidebar-section-title">Report Management</div>
-        <a href="submit_report.php">Submit Report</a>
-        <a href="view_report.php">My Report</a>
+        <a href="profile.php">
+            <i class="fas fa-user-circle"></i> Profile
+        </a>
+        <div class="sidebar-section-title"> Report Management</div>
+        <a href="submit_report.php">
+            <i class="fas fa-plus-circle"></i> Submit Report
+        </a>
+        <a href="view_report.php">
+            <i class="fas fa-file-alt"></i> My Report
+        </a>
     </nav>
     <div class="logout-link">
-        <a href="../logout.php">Logout</a>
+        <a href="../logout.php">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
     </div>
 </aside>
 <div class="main-content">

@@ -114,6 +114,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
         .message.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .message.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
     </style>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
 </head>
 <body>
 
@@ -122,15 +124,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
 <aside class="sidebar">
     <div class="sidebar-header">MRS Staff</div>
     <nav>
-        <a href="staff_dashboard.php" class="active">Dashboard</a>
-        <div class="sidebar-section-title">My Profile</div>
-        <a href="profile.php">Profile</a>
-        <div class="sidebar-section-title">Report Management</div>
-        <a href="submit_report.php">Submit Report</a>
-        <a href="view_report.php">My Report</a>
+        <a href="staff_dashboard.php" >
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+        </a>
+        <div class="sidebar-section-title"> My Profile</div>
+        <a href="profile.php" class="active">
+            <i class="fas fa-user-circle"></i> Profile
+        </a>
+        <div class="sidebar-section-title"> Report Management</div>
+        <a href="submit_report.php">
+            <i class="fas fa-plus-circle"></i> Submit Report
+        </a>
+        <a href="view_report.php">
+            <i class="fas fa-file-alt"></i> My Report
+        </a>
     </nav>
     <div class="logout-link">
-        <a href="../logout.php">Logout</a>
+        <a href="../logout.php">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
     </div>
 </aside>
 

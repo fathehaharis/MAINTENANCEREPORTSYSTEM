@@ -61,6 +61,7 @@ foreach ($statuses as $status) {
         .tool-buttons a { background: #4a90e2; color: #fff; padding: 10px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; transition: background 0.2s; }
         .tool-buttons a:hover { background: #2c6cd2; }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
 
@@ -68,16 +69,16 @@ foreach ($statuses as $status) {
 <aside class="sidebar">
     <div class="sidebar-header">MRS Technician</div>
     <nav>
-        <a href="tech_dashboard.php" class="active">Dashboard</a>
-        <a href="tech_profile.php">Profile</a>
+        <a href="tech_dashboard.php" class="active">  <i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="tech_profile.php">      <i class="fas fa-user"></i> Profile</a>
         <div class="sidebar-section-title">Task</div>
-        <a href="tech_ass.php">Assignments</a>
-        <a href="tech_archive.php">Archived Reports</a>
+        <a href="tech_ass.php"><i class="fas fa-tasks"></i> Assignments</a>
+        <a href="tech_archive.php">  <i class="fas fa-archive"></i> Archived Reports</a>
         <div class="sidebar-section-title">Help</div>
-        <a href="https://www.annamalaiuniversity.ac.in/studport/download/engg/civil%20and%20structural/Building%20Repairs%20and%20Maintenance.pdf" target="_blank">Maintenance Guide</a>
+        <a href="https://www.annamalaiuniversity.ac.in/studport/download/engg/civil%20and%20structural/Building%20Repairs%20and%20Maintenance.pdf" target="_blank"> <i class="fas fa-book"></i> Maintenance Guide</a>
     </nav>
     <div class="logout-link">
-        <a href="../logout.php">Logout</a>
+        <a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
 </aside>
 

@@ -24,7 +24,7 @@ $reports = $stmt->get_result();
   <title>Technician - Archived Reports</title>
   <style>
     body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f7fafc; }
-    header.tech-header { background: #4a90e2; color: white; padding: 1.3rem 0; font-size: 2rem; font-weight: 700; text-align: center; position: fixed; top: 0; width: 100%; z-index: 1000; }
+    header.staff-header { background: #4a90e2; color: white; padding: 1.3rem 0; font-size: 2rem; font-weight: 700; text-align: center; position: fixed; top: 0; width: 100%; z-index: 1000; }
     .sidebar { position: fixed; top: 0; left: 0; width: 220px; height: 100vh; background: #253444; color: #fff; display: flex; flex-direction: column; z-index: 1100; }
     .sidebar-header { padding: 2rem 1rem 1rem 2rem; font-size: 1.3rem; font-weight: bold; background: #1d2937; }
     .sidebar nav { flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 1.5rem 0.5rem 1.5rem 2rem; }
@@ -32,6 +32,7 @@ $reports = $stmt->get_result();
     .sidebar nav a.active, .sidebar nav a:hover { background: #4285F4; color: #fff; }
     .sidebar .logout-link { margin-top: auto; margin-bottom: 2rem; padding-left: 2rem; }
     .sidebar .logout-link a { color: #ffbdbd; background: #a94442; font-weight: bold; text-decoration: none; padding: 10px 16px; border-radius: 6px; display: inline-block; }
+        .sidebar-section-title { font-size: 1rem; margin-top: 1.5rem; margin-bottom: 0.7rem; font-weight: bold; color: #b8e0fc; }
 
     .main-content { margin-left: 220px; padding-top: 90px; padding-bottom: 2rem; min-height: 100vh; }
     .container { max-width: 1100px; margin: 0 auto; padding: 20px; background: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
@@ -45,25 +46,25 @@ $reports = $stmt->get_result();
     .attachment-link { color: #2c3e50; text-decoration: underline; display: block; margin-bottom: 4px; }
     .preview-img { max-height: 80px; max-width: 80px; border-radius: 6px; margin: 4px; box-shadow: 0 1px 5px rgba(0,0,0,0.1); }
   </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
 
-<header class="tech-header">Maintenance Report System - Technician</header>
-
+<header class="staff-header">Maintenance Report System - Technician</header>
 <aside class="sidebar">
-  <div class="sidebar-header">MRS Technician</div>
-  <nav>
-    <a href="tech_dashboard.php">Dashboard</a>
-    <a href="tech_profile.php">Profile</a>
-    <div class="sidebar-section-title">Task</div>
-    <a href="tech_ass.php">Assignments</a>
-    <a href="tech_archive.php" class="active">Archived Reports</a>
-    <div class="sidebar-section-title">Help</div>
-    <a href="https://www.annamalaiuniversity.ac.in/studport/download/engg/civil%20and%20structural/Building%20Repairs%20and%20Maintenance.pdf" target="_blank">Maintenance Guide</a>
-  </nav>
-  <div class="logout-link">
-    <a href="../logout.php">Logout</a>
-  </div>
+    <div class="sidebar-header">MRS Technician</div>
+    <nav>
+        <a href="tech_dashboard.php" >  <i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="tech_profile.php">      <i class="fas fa-user"></i> Profile</a>
+        <div class="sidebar-section-title">Task</div>
+        <a href="tech_ass.php"><i class="fas fa-tasks"></i> Assignments</a>
+        <a href="tech_archive.php" class="active">  <i class="fas fa-archive"></i> Archived Reports</a>
+        <div class="sidebar-section-title">Help</div>
+        <a href="https://www.annamalaiuniversity.ac.in/studport/download/engg/civil%20and%20structural/Building%20Repairs%20and%20Maintenance.pdf" target="_blank"> <i class="fas fa-book"></i> Maintenance Guide</a>
+    </nav>
+    <div class="logout-link">
+        <a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </div>
 </aside>
 
 <div class="main-content">
