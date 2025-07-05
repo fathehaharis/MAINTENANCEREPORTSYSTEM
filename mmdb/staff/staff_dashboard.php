@@ -60,7 +60,7 @@ $name = htmlspecialchars($_SESSION['name']);
             <h2>Quick Links</h2>
             <ul style="list-style: none; padding: 0;">
                 <li><a href="submit_report.php">➤ Submit a New Report</a></li>
-                <li><a href="report_history.php">➤ View My Report History</a></li>
+                <li><a href="view_report.php">➤ View My Report History</a></li>
                 <li><a href="profile.php">➤ Edit My Profile</a></li>
             </ul>
         </div>
