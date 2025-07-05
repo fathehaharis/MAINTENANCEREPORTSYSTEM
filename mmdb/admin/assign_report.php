@@ -65,35 +65,201 @@ function get_attachments($conn, $report_id) {
     <title>Assign Report - MRS</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f7fafc; min-height: 100vh;}
-        header.admin-header { background: #5481a7; color: white; padding: 1.3rem 0; font-size: 2rem; text-align: center; font-weight: 700; position: fixed; width: 100%; z-index: 1000; }
-        .sidebar { position: fixed; top: 0; left: 0; width: 220px; height: 100vh; background: #253444; color: #fff; display: flex; flex-direction: column; z-index: 1100; }
-        .sidebar-header { padding: 2rem 1rem 1rem 2rem; font-size: 1.1rem;  font-weight: bold; background: #1d2937; }
-        .sidebar nav { flex: 1; display: flex; flex-direction: column; padding: 1.5rem 0.5rem 1.5rem 2rem; }
-        .sidebar-section-title { font-size: 0.85rem; margin-top: 1.5rem; margin-bottom: 0.7rem; font-weight: bold; color: #b8e0fc; }
-        .sidebar nav a { color: #cdd9e5; text-decoration: none;     font-size: 0.9rem;    padding: 8px 14px; border-radius: 6px; transition: background 0.2s; font-weight: 500; display: block; }
-        .sidebar nav a.active, .sidebar nav a:hover { background: #4285F4; color: #fff;}
-        .sidebar .logout-link { margin-top: auto; margin-bottom: 2rem; padding-left: 2rem;}
-        .sidebar .logout-link a { color: #ffbdbd; background: #a94442; font-weight: bold; text-decoration: none;     font-size: 0.9rem;padding: 8px 14px; border-radius: 6px; display: inline-block; }
-        .main-content { margin-left: 220px; padding-top: 70px; padding-bottom: 2rem; background: #f7fafc; min-height: 100vh; }
-        .container { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
-        h2 { color: #253444; margin: 2rem 0 1rem 0; font-size: 1.7rem; font-weight: bold;}
-        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); overflow: hidden;}
-        th, td { padding: 0.8rem 1rem; border-bottom: 1px solid #eaeaea; text-align: left; vertical-align: top;}
-        th { background: #e8f0fe; color: #253444; font-weight: bold;}
-        tr:last-child td { border-bottom: none; }
-        .msg { color: #205e10; margin-bottom: 1rem; font-weight: bold; text-align: center;}
-        .assign-form { margin: 0;}
-        select { padding: 6px 10px; border-radius: 5px; border: 1px solid #aaa;}
-        button { background: #4285F4; color: #fff; padding: 6px 18px; border: none; border-radius: 5px; cursor: pointer; font-size: 1rem;}
-        button:hover { background: #306ac3;}
-        .no-reports { color: #888; text-align: center; }
-        .attachments-list { list-style: none; padding-left: 0; margin: 0; }
-        .attachments-list li { margin-bottom: 3px; font-size: 0.96rem; }
-        .attachment-link { color: #4285F4; text-decoration: underline; }
-        .attachment-link:hover { color: #205e10; }
-        .attachment-preview-img { max-width: 80px; max-height: 80px; border: 1px solid #ccc; margin-top: 3px; display: block; }
-        .attachment-preview-video { max-width: 120px; max-height: 80px; border: 1px solid #ccc; margin-top: 3px; display: block; border-radius: 8px; }
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f7fafc;
+            min-height: 100vh;
+        }
+        header.admin-header {
+            width: 100%;
+            background: #5481a7;
+            color: white;
+            padding: 1.3rem 0;
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            letter-spacing: 1px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 220px;
+            height: 100vh;
+            background: #253444;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            z-index: 1100;
+        }
+        .sidebar-header {
+            padding: 2rem 1rem 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            background: #1d2937;
+        }
+        .sidebar nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 1.5rem 0.5rem 1.5rem 2rem;
+        }
+        .sidebar-section-title {
+            font-size: 0.85rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.7rem;
+            font-weight: bold;
+            color: #b8e0fc;
+        }
+        .sidebar nav a {
+            color: #cdd9e5;
+            text-decoration: none;
+            font-size: 0.9rem;
+            padding: 8px 14px;
+            border-radius: 6px;
+            transition: background 0.2s;
+            font-weight: 500;
+            display: block;
+        }
+        .sidebar nav a.active, .sidebar nav a:hover {
+            background: #4285F4;
+            color: #fff;
+        }
+        .sidebar .logout-link {
+            margin-top: auto;
+            margin-bottom: 2rem;
+            padding-left: 2rem;
+        }
+        .sidebar .logout-link a {
+            color: #ffbdbd;
+            background: #a94442;
+            font-weight: bold;
+            text-decoration: none;
+            font-size: 0.9rem;
+            padding: 8px 14px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+        .main-content {
+            margin-left: 220px;
+            padding-top: 70px;
+            padding-bottom: 2rem;
+            min-height: 100vh;
+            background: #f7fafc;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        h2 {
+            color: #253444;
+            margin: 2rem 0 1rem 0;
+            font-size: 1.7rem;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            overflow: hidden;
+        }
+        th, td {
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid #eaeaea;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background: #e8f0fe;
+            color: #253444;
+            font-weight: bold;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        .msg {
+            color: #205e10;
+            margin-bottom: 1rem;
+            font-weight: bold;
+            text-align: center;
+        }
+        .assign-form {
+            margin: 0;
+        }
+        select {
+            padding: 6px 10px;
+            border-radius: 5px;
+            border: 1px solid #aaa;
+        }
+        button {
+            background: #4285F4;
+            color: #fff;
+            padding: 6px 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        button:hover {
+            background: #306ac3;
+        }
+        .no-reports {
+            color: #888;
+            text-align: center;
+        }
+        .attachments-list {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+        }
+        .attachments-list li {
+            margin-bottom: 3px;
+            font-size: 0.96rem;
+        }
+        .attachment-link {
+            color: #4285F4;
+            text-decoration: underline;
+        }
+        .attachment-link:hover {
+            color: #205e10;
+        }
+        .attachment-preview-img, .attachment-preview-video {
+            max-width: 80px;
+            max-height: 80px;
+            border: 1px solid #ccc;
+            margin-top: 3px;
+            display: block;
+            border-radius: 6px;
+            box-shadow: 0 0 3px #ccc;
+        }
+        .attachment-preview-video {
+            max-width: 120px;
+            max-height: 80px;
+        }
+        @media (max-width: 1100px) {
+            .container { padding: 0 8px; }
+            .main-content { margin-left: 0; padding-top: 70px; }
+        }
+        @media (max-width: 900px) {
+            header.admin-header { font-size: 1.2rem; }
+            .main-content { margin-left: 0; padding-top: 70px; }
+            .sidebar { position: static; width: 100%; min-height: auto; flex-direction: row; }
+            .sidebar-header, .sidebar nav, .sidebar .logout-link { padding-left: 1rem; }
+            .container { padding: 0 8px; }
+        }
+        @media (max-width: 600px) {
+            .container { padding: 0 2px; }
+            table th, table td { padding: 0.45rem 0.6rem; }
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
