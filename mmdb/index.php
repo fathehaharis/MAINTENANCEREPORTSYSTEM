@@ -94,7 +94,8 @@ $role = $_SESSION['role'] ?? 'guest';
 </head>
 <body>
 
-<header>Maintenance Report System</header>
+<header>        <a href="indexmadam.php" class="button">About Us</a>
+Maintenance Report System</header>
 
 <main>
     <div class="login-container">
