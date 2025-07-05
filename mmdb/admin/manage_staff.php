@@ -53,25 +53,27 @@ $result = $conn->query("SELECT user_id, name, email, is_active, date_created FRO
         }
         @media (max-width: 600px) { .container { padding: 0 2px; } }
     </style>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
 </head>
 <body>
 <header class="admin-header">
     Maintenance Report System - Admin Dashboard
 </header>
 <aside class="sidebar">
-    <div class="sidebar-header">MRS Admin</div>
-    <nav>
-        <a href="admin_dashboard.php">Dashboard</a>
-        <div class="sidebar-section-title">User Management</div>
-        <a href="manage_staff.php" class="active">Staff</a>
-        <a href="manage_technician.php">Technician</a>
-        <div class="sidebar-section-title">Report Management</div>
-        <a href="assign_report.php">Assign Report</a>
-        <a href="view_report_history.php">View Report</a>
-    </nav>
-    <div class="logout-link">
-        <a href="../logout.php">Logout</a>
+    <div class="sidebar-header">
+        <i class="fas fa-user-shield"></i> MRS Admin
     </div>
+    <nav>
+        <a href="admin_dashboard.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <div class="sidebar-section-title">User Management</div>
+        <a href="manage_staff.php" class="active"><i class="fas fa-user-tie"></i> Staff</a>
+        <a href="manage_technician.php"><i class="fas fa-user-cog"></i> Technician </a>
+        <div class="sidebar-section-title">Report Management</div>
+        <a href="assign_report.php"><i class="fas fa-tasks"></i> Assign Report</a>
+        <a href="view_report_history.php"><i class="fas fa-history"></i> View Report</a>
+    </nav>
+    <div class="logout-link"><a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></div>
 </aside>
 <div class="main-content">
     <div class="container">

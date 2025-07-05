@@ -167,22 +167,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_report'])) {
             border-radius: 7px;
         }
   </style>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
 </head>
 <body>
 <header class="staff-header">Maintenance Report System - Staff</header>
 <aside class="sidebar">
-  <div class="sidebar-header">MRS Staff</div>
-  <nav>
-    <a href="staff_dashboard.php">Dashboard</a>
-    <div class="sidebar-section-title">My Profile</div>
-    <a href="profile.php">Profile</a>
-    <div class="sidebar-section-title">Report Management</div>
-    <a href="submit_report.php">Submit Report</a>
-    <a href="view_report.php">My Report</a>
-  </nav>
-  <div class="logout-link">
-    <a href="../logout.php">Logout</a>
-  </div>
+    <div class="sidebar-header">MRS Staff</div>
+    <nav>
+        <a href="staff_dashboard.php" >
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+        </a>
+        <div class="sidebar-section-title">My Profile</div>
+        <a href="profile.php">
+            <i class="fas fa-user-circle"></i> Profile
+        </a>
+        <div class="sidebar-section-title"> Report Management</div>
+        <a href="submit_report.php">
+            <i class="fas fa-plus-circle"></i> Submit Report
+        </a>
+        <a href="view_report.php">
+            <i class="fas fa-file-alt"></i> My Report
+        </a>
+    </nav>
+    <div class="logout-link">
+        <a href="../logout.php">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </a>
+    </div>
 </aside>
 <div class="main-content">
   <div class="container">

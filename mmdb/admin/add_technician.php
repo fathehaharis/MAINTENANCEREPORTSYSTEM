@@ -74,25 +74,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         @media (max-width: 900px) { .main-content { margin-left: 0; padding-top: 70px; } .sidebar { position: static; width: 100%; min-height: auto; flex-direction: row; } .sidebar-header, .sidebar nav, .sidebar .logout-link { padding-left: 1rem; } .container { padding: 0 8px; } header.admin-header { font-size: 1.2rem; } }
         @media (max-width: 600px) { .container { padding: 0 2px; } }
     </style>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
 </head>
 <body>
 <header class="admin-header">
     Maintenance Report System - Admin Dashboard
 </header>
 <aside class="sidebar">
-    <div class="sidebar-header">MRS Admin</div>
-    <nav>
-        <a href="admin_dashboard.php">Dashboard</a>
-        <div class="sidebar-section-title">User Management</div>
-        <a href="manage_staff.php">Staff</a>
-        <a href="manage_technician.php" class="active">Technician</a>
-        <div class="sidebar-section-title">Report Management</div>
-        <a href="assign_report.php">Assign Report</a>
-        <a href="view_report_history.php">View Report</a>
-    </nav>
-    <div class="logout-link">
-        <a href="../logout.php">Logout</a>
+    <div class="sidebar-header">
+        <i class="fas fa-user-shield"></i> MRS Admin
     </div>
+    <nav>
+        <a href="admin_dashboard.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <div class="sidebar-section-title">User Management</div>
+        <a href="manage_staff.php"><i class="fas fa-user-tie"></i> Staff</a>
+        <a href="manage_technician.php"  class="active"><i class="fas fa-user-cog"></i> Technician </a>
+        <div class="sidebar-section-title">Report Management</div>
+        <a href="assign_report.php"><i class="fas fa-tasks"></i> Assign Report</a>
+        <a href="view_report_history.php"><i class="fas fa-history"></i> View Report</a>
+    </nav>
+    <div class="logout-link"><a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></div>
 </aside>
 <div class="main-content">
     <div class="container">
