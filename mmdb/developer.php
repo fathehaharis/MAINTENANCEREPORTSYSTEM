@@ -2,8 +2,8 @@
 $group_members = [
     [
         'name' => 'AFIFAH SYAZA HUDA BINTI AHMAD',
-        'image' => 'images/afifah.jpg', // <-- update as needed!
-        'resume' => 'resumes/alice_resume.pdf',
+        'image' => 'images/afifah.jpg', 
+        'resume' => 'resumes/afifah_resume.pdf',
     ],
     [
         'name' => 'NUR FATHEHAH BINTI MOHD ARIS',
