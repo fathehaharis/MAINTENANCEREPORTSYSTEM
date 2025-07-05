@@ -18,14 +18,16 @@ $role = $_SESSION['role'] ?? 'guest';
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        body {
-            background: linear-gradient(to right, #ece9e6, #ffffff);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            color: #333;
-        }
+body {
+    background: url('uploads/background.avif') no-repeat center top fixed;
+    background-size: 1000px auto;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: #333;
+}
 
         header {
             background-color: #2c3e50;
@@ -94,9 +96,10 @@ $role = $_SESSION['role'] ?? 'guest';
 </head>
 <body>
 
-<header>DVMS</header>
+<header>Maintenance Report System</header>
 
 <main>
+    
     <div class="login-container">
         <h2>Welcome to Maintenance Report System</h2>
         <p>Please register or log in to continue:</p>

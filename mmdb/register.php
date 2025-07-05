@@ -53,14 +53,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Register - MRS</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body {
-            background: linear-gradient(to right, #ece9e6, #ffffff);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            color: #333;
-        }
+body {
+    background: url('uploads/background.avif') no-repeat center top fixed;
+    background-size: 1000px auto;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: #333;
+}
+
         header {
             background-color: #2c3e50;
             color: #fff;
