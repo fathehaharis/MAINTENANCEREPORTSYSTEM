@@ -23,6 +23,20 @@ while ($row = $techResult->fetch_assoc()) {
 
 // Assign report handler
 $message = "";
+$user_id = $_SESSION['user_id'];
+
+// Fetch user info from DB
+$stmt = $conn->prepare("SELECT name, email, profilepic FROM sys_user WHERE user_id = ?");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$stmt->bind_result($name, $email, $profilepic);
+$stmt->fetch();
+$stmt->close();
+if (empty($profilepic) || !file_exists('../' . $profilepic)) {
+    $profilepic = 'profilepic/default.jpeg';
+}
+$profilepic_path = '../' . $profilepic;
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['report_id'], $_POST['technician_id'])) {
     $report_id = intval($_POST['report_id']);
     $technician_id = intval($_POST['technician_id']);
@@ -267,9 +281,11 @@ function get_attachments($conn, $report_id) {
 <body>
 <header class="admin-header">Maintenance Report System - Admin Dashboard</header>
 <aside class="sidebar">
-    <div class="sidebar-header">
-        <i class="fas fa-user-shield"></i> MRS Admin
-    </div>
+<div class="sidebar-header" style="display: flex; align-items: center; gap: 10px;">
+    <img src="<?= htmlspecialchars($profilepic_path) ?>" alt="Profile Picture"
+         style="width: 24px; height: 24px; object-fit: cover; border-radius: 50%;">
+    <div style="font-size: 1.1rem; color: #fff;">MRS Admin</div>
+</div>
     <nav>
         <a href="admin_dashboard.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
         <div class="sidebar-section-title">User Management</div>

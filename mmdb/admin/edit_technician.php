@@ -14,6 +14,20 @@ if (!$id) {
 }
 
 $message = "";
+$user_id = $_SESSION['user_id'];
+
+// Fetch user info from DB
+$stmt = $conn->prepare("SELECT name, email, profilepic FROM sys_user WHERE user_id = ?");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$stmt->bind_result($name, $email, $profilepic);
+$stmt->fetch();
+$stmt->close();
+if (empty($profilepic) || !file_exists('../' . $profilepic)) {
+    $profilepic = 'profilepic/default.jpeg';
+}
+$profilepic_path = '../' . $profilepic;
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim($_POST['name'] ?? '');
     $email = trim($_POST['email'] ?? '');
@@ -83,9 +97,11 @@ $stmt->close();
     Maintenance Report System - Admin Dashboard
 </header>
 <aside class="sidebar">
-    <div class="sidebar-header">
-        <i class="fas fa-user-shield"></i> MRS Admin
-    </div>
+<div class="sidebar-header" style="display: flex; align-items: center; gap: 10px;">
+    <img src="<?= htmlspecialchars($profilepic_path) ?>" alt="Profile Picture"
+         style="width: 24px; height: 24px; object-fit: cover; border-radius: 50%;">
+    <div style="font-size: 1.1rem; color: #fff;">MRS Admin</div>
+</div>
     <nav>
         <a href="admin_dashboard.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
         <div class="sidebar-section-title">User Management</div>

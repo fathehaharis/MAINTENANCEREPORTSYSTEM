@@ -18,6 +18,10 @@ $stmt->execute();
 $stmt->bind_result($name, $email, $profilepic);
 $stmt->fetch();
 $stmt->close();
+if (empty($profilepic) || !file_exists('../' . $profilepic)) {
+    $profilepic = 'profilepic/default.jpeg';
+}
+$profilepic_path = '../' . $profilepic;
 
 // Update profile (name and email)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
@@ -65,6 +69,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
             $message = '<div class="message error">Error updating profile.</div>';
         }
     }
+}
+// Delete profile picture
+if (isset($_POST['delete_picture']) && $profilepic !== 'profilepic/default.jpeg') {
+    if (file_exists('../' . $profilepic)) {
+        unlink('../' . $profilepic);
+    }
+
+    $stmt = $conn->prepare("UPDATE sys_user SET profilepic = 'profilepic/default.jpeg' WHERE user_id = ?");
+    $stmt->bind_param("i", $user_id); // ✅ FIXED here
+    $stmt->execute();
+    $stmt->close();
+
+    $profilepic = 'profilepic/default.jpeg';
+    $profilepic_path = '../' . $profilepic;
+    $message = '<div class="message success">Profile picture deleted.</div>';
 }
 
 // Handle password change (plain text -- not recommended for production)
