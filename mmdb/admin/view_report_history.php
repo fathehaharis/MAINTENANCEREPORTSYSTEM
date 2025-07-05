@@ -266,6 +266,10 @@ $reportResult = $reports->get_result();
             <div class="sidebar-section-title">Report Management</div>
             <a href="assign_report.php"><i class="fas fa-tasks"></i> Assign Report</a>
             <a href="view_report_history.php" class="active"><i class="fas fa-history"></i> View Report</a>
+                                    <div class="sidebar-section-title"> My Profile</div>     
+        <a href="admin_profile.php">
+            <i class="fas fa-user-circle"></i> Profile
+        </a>
         </nav>
         <div class="logout-link"><a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></div>
     </aside>
