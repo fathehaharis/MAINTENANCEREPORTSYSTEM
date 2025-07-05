@@ -18,14 +18,16 @@ $role = $_SESSION['role'] ?? 'guest';
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        body {
-            background: linear-gradient(to right, #ece9e6, #ffffff);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            color: #333;
-        }
+body {
+    background: url('uploads/background.avif') no-repeat center top fixed;
+    background-size: 1000px auto;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: #333;
+}
 
         header {
             background-color: #2c3e50;
@@ -100,6 +102,14 @@ $role = $_SESSION['role'] ?? 'guest';
     margin-top: 20px;
     text-align: center;
 }
+.button-secondary {
+    background-color: #000;
+    color: #fff;
+}
+
+.button-secondary:hover {
+    background-color: #333;
+}
 
 
     </style>
@@ -117,9 +127,9 @@ $role = $_SESSION['role'] ?? 'guest';
         </div>
 
         <!-- About Us button -->
-        <div class="about-link">
-            <a href="indexmadam.php" class="button">About Us</a>
-        </div>
+<div class="about-link">
+    <a href="indexmadam.php" class="button button-secondary">About Us</a>
+</div>
     </div>
 </main>
 
