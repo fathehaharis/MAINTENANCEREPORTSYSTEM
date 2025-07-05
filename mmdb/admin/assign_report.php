@@ -93,8 +93,9 @@ function get_attachments($conn, $report_id) {
         .attachment-link { color: #4285F4; text-decoration: underline; }
         .attachment-link:hover { color: #205e10; }
         .attachment-preview-img { max-width: 80px; max-height: 80px; border: 1px solid #ccc; margin-top: 3px; display: block; }
+        .attachment-preview-video { max-width: 120px; max-height: 80px; border: 1px solid #ccc; margin-top: 3px; display: block; border-radius: 8px; }
     </style>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 </head>
 <body>
@@ -145,17 +146,16 @@ function get_attachments($conn, $report_id) {
                                     $label = $att['file_name'] ? htmlspecialchars($att['file_name']) : 'Attachment '.$att['media_id'];
                                     $file_type = $att['file_type'] ?? '';
                                     $file_name = $att['file_name'] ?? '';
-                                    $is_image = false;
+                                    $is_image = $is_video = false;
 
-                                    // Try to guess image even if file_type or file_name is null
                                     if ($file_type && strpos($file_type, 'image/') === 0) {
                                         $is_image = true;
+                                    } elseif ($file_type && strpos($file_type, 'video/') === 0) {
+                                        $is_video = true;
                                     } elseif ($file_name) {
                                         $ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
                                         if (in_array($ext, ['jpg','jpeg','png','gif','bmp','webp'])) $is_image = true;
-                                    } else {
-                                        // fallback: assume image if file_type and file_name are both missing
-                                        $is_image = true;
+                                        if (in_array($ext, ['mp4','webm','ogg','mov','avi','mkv'])) $is_video = true;
                                     }
                                 ?>
                                     <li>
@@ -163,6 +163,11 @@ function get_attachments($conn, $report_id) {
                                             <img src="../attachment.php?media_id=<?= $att['media_id'] ?>"
                                                 alt="<?= $label ?>"
                                                 class="attachment-preview-img">
+                                        <?php elseif ($is_video): ?>
+                                            <video class="attachment-preview-video" controls>
+                                                <source src="../attachment.php?media_id=<?= $att['media_id'] ?>" type="<?= htmlspecialchars($file_type) ?>">
+                                                Your browser does not support the video tag.
+                                            </video>
                                         <?php endif; ?>
                                         <a class="attachment-link" href="../attachment.php?media_id=<?= $att['media_id'] ?>" target="_blank">
                                             <?= $label ?>
