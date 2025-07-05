@@ -89,22 +89,40 @@ $role = $_SESSION['role'] ?? 'guest';
             padding: 1rem;
             background-color: #f1f1f1;
             font-size: 14px;
-        }
+       }
+.main-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.about-link {
+    margin-top: 20px;
+    text-align: center;
+}
+
+
     </style>
 </head>
 <body>
 
-<header>        <a href="indexmadam.php" class="button">About Us</a>
-Maintenance Report System</header>
-
+<header>Maintenance Report System</header>
 <main>
-    <div class="login-container">
-        <h2>Welcome to Maintenance Report System</h2>
-        <p>Please register or log in to continue:</p>
-        <a href="register.php" class="button">Register</a>
-        <a href="login.php" class="button">Login</a>
+    <div class="main-content">
+        <div class="login-container">
+            <h2>Welcome to Maintenance Report System</h2>
+            <p>Please register or log in to continue:</p>
+            <a href="register.php" class="button">Register</a>
+            <a href="login.php" class="button">Login</a>
+        </div>
+
+        <!-- About Us button -->
+        <div class="about-link">
+            <a href="indexmadam.php" class="button">About Us</a>
+        </div>
     </div>
 </main>
+
 
 <footer>&copy; 2025 RMS. All rights reserved.</footer>
 
