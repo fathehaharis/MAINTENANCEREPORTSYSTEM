@@ -1,8 +1,8 @@
 <?php
-$host = "localhost";    // Change to your MySQL server host
-$user = "mmdb";     // Change to your MySQL username
-$pass = "mmdb1";     // Change to your MySQL password
-$dbname = "complain";   // Change to your MySQL database name
+$host = "localhost";   
+$user = "mmdb";     
+$pass = "mmdb1";     
+$dbname = "p25_complain";   
 
 // Create connection
 $conn = new mysqli($host, $user, $pass, $dbname);
