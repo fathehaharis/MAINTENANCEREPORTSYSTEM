@@ -1,6 +1,6 @@
 <?php
 $host = "localhost";   
-$user = "mmdb";     
+$user = "mmdb1";     
 $pass = "mmdb1";     
 $dbname = "p25_complain";   
 
