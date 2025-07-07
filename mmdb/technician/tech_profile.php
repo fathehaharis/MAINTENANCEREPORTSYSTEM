@@ -90,6 +90,35 @@ if (isset($_POST['delete_picture']) && $profilepic !== 'profilepic/default.jpeg'
     $profilepic = 'profilepic/default.jpeg';
     $message = '<div class="message success">Profile picture deleted.</div>';
 }
+
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
+    $current_password = $_POST['current_password'];
+    $new_password     = $_POST['new_password'];
+    $confirm_password = $_POST['confirm_password'];
+
+    $stmt = $conn->prepare("SELECT password FROM sys_user WHERE user_id = ?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $stmt->bind_result($plain_password_db);
+    $stmt->fetch();
+    $stmt->close();
+
+    if ($current_password !== $plain_password_db) {
+        $password_message = '<div class="message error">Current password is incorrect.</div>';
+    } elseif ($new_password !== $confirm_password) {
+        $password_message = '<div class="message error">New passwords do not match.</div>';
+    } else {
+        $stmt = $conn->prepare("UPDATE sys_user SET password = ? WHERE user_id = ?");
+        $stmt->bind_param("si", $new_password, $user_id);
+        if ($stmt->execute()) {
+            $password_message = '<div class="message success">Password changed successfully.</div>';
+        } else {
+            $password_message = '<div class="message error">Failed to update password.</div>';
+        }
+    }
+}
+
 ?>
 
 <!DOCTYPE html>
