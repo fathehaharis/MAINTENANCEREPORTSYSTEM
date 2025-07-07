@@ -9,7 +9,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 2) {
 
 $tech_id = $_SESSION['user_id'];
 
-// Fetch technician name
+// Fetch technician name, email, profile picture
 $stmt = $conn->prepare("SELECT name, email, profilepic FROM sys_user WHERE user_id = ?");
 $stmt->bind_param("i", $tech_id);
 $stmt->execute();
@@ -17,11 +17,9 @@ $stmt->bind_result($name, $email, $profilepic);
 $stmt->fetch();
 $stmt->close();
 
-
 // Fetch report counts for each status
 $statuses = ['In Progress', 'Completed', 'Assigned'];
 $status_counts = [];
-
 foreach ($statuses as $status) {
     $query = $conn->prepare("SELECT COUNT(*) FROM user_report WHERE assigned_to = ? AND status = ?");
     $query->bind_param("is", $tech_id, $status);
@@ -31,6 +29,19 @@ foreach ($statuses as $status) {
     $status_counts[$status] = $count;
     $query->close();
 }
+
+// Fetch recent "Assigned" reports for alert
+$assignedReportsRes = $conn->prepare(
+    "SELECT report_id, title, description, date_reported 
+     FROM user_report 
+     WHERE assigned_to = ? AND status = 'Assigned'
+     ORDER BY date_reported DESC
+     LIMIT 5"
+);
+$assignedReportsRes->bind_param("i", $tech_id);
+$assignedReportsRes->execute();
+$assignedReports = $assignedReportsRes->get_result();
+$assignedAlertCount = $assignedReports->num_rows;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -61,6 +72,36 @@ foreach ($statuses as $status) {
         .tool-buttons { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 15px; }
         .tool-buttons a { background: #4a90e2; color: #fff; padding: 10px 16px; border-radius: 6px; text-decoration: none; font-weight: 500; transition: background 0.2s; }
         .tool-buttons a:hover { background: #2c6cd2; }
+        .alert-assigned {
+            background: #e6f2fb;
+            border-left: 7px solid #4285F4;
+            color: #253444;
+            padding: 1.2rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            font-size: 1.08rem;
+            position: relative;
+            box-shadow: 0 2px 10px rgba(66, 133, 244, 0.06);
+        }
+        .alert-assigned .alert-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #1c4587;
+        }
+        .alert-assigned ul {
+            margin: 1rem 0 0 1.5rem;
+            padding: 0;
+        }
+        .alert-assigned li {
+            margin-bottom: 0.6rem;
+            font-size: 0.98rem;
+        }
+        .alert-assigned .view-link {
+            color: #4285F4;
+            text-decoration: underline;
+            font-weight: bold;
+            margin-left: 12px;
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -95,6 +136,34 @@ foreach ($statuses as $status) {
         <h2>Welcome, <?= htmlspecialchars($name) ?>!</h2>
         <p>This is your technician dashboard. You can monitor and manage all your assigned maintenance tasks here.</p>
 
+        <!-- Alert for new assigned reports -->
+        <?php if ($assignedAlertCount > 0): ?>
+        <div class="alert-assigned">
+            <span class="alert-title">
+                <i class="fas fa-bell"></i>
+                <?= $assignedAlertCount ?> new report<?= $assignedAlertCount > 1 ? 's' : '' ?> assigned to you!
+            </span>
+            <ul>
+                <?php while($row = $assignedReports->fetch_assoc()): ?>
+                <li>
+                    <span style="font-weight:bold;"><?= htmlspecialchars($row['title']) ?></span>
+                    <span style="color:#555;">(<?= date("d M Y, H:i", strtotime($row['date_reported'])) ?>)</span>
+                    <br>
+                    <span style="font-size:0.97em;"><?= htmlspecialchars(mb_strimwidth($row['description'], 0, 60, '...')) ?></span>
+                    <a class="view-link" href="tech_ass.php?report_id=<?= $row['report_id'] ?>">View</a>
+                </li>
+                <?php endwhile; ?>
+            </ul>
+            <?php if ($assignedAlertCount > 5): ?>
+            <div style="margin-top: 10px;">
+                <a href="tech_ass.php" style="color:#1c4587;font-weight:bold;text-decoration:underline;">
+                    View all assigned reports
+                </a>
+            </div>
+            <?php endif; ?>
+        </div>
+        <?php endif; ?>
+
         <div class="status-cards">
             <div class="card assigned">
                 <h3><?= $status_counts['Assigned'] ?></h3>
@@ -108,7 +177,6 @@ foreach ($statuses as $status) {
                 <h3><?= $status_counts['Completed'] ?></h3>
                 <p>Completed</p>
             </div>
-
         </div>
 
         <div class="quick-tools">

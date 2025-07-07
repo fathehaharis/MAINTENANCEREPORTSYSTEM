@@ -48,6 +48,18 @@ $recentActivity = $conn->query(
      ORDER BY h.changed_at DESC 
      LIMIT 10"
 );
+
+// Fetch reports with status 'Pending' and not assigned yet (ALERT)
+$pendingToAssign = $conn->query(
+    "SELECT report_id, title, description, date_reported 
+     FROM user_report 
+     WHERE status = 'Pending' AND assigned_to IS NULL 
+     ORDER BY date_reported DESC 
+     LIMIT 5"
+);
+$pendingCount = $conn->query(
+    "SELECT COUNT(*) FROM user_report WHERE status = 'Pending' AND assigned_to IS NULL"
+)->fetch_row()[0];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -56,6 +68,7 @@ $recentActivity = $conn->query(
     <title>Admin Dashboard - MRS</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body {
             margin: 0;
@@ -98,9 +111,7 @@ $recentActivity = $conn->query(
             padding: 1.5rem 0.5rem 1.5rem 2rem;
         }
         .sidebar-section-title { font-size: 0.85rem; margin-top: 1.5rem; margin-bottom: 0.7rem; font-weight: bold; color: #b8e0fc; }
-
-        .sidebar nav a { color: #cdd9e5; text-decoration: none;     font-size: 0.9rem;    padding: 8px 14px; border-radius: 6px; transition: background 0.2s; font-weight: 500; display: block; }
-
+        .sidebar nav a { color: #cdd9e5; text-decoration: none; font-size: 0.9rem; padding: 8px 14px; border-radius: 6px; transition: background 0.2s; font-weight: 500; display: block; }
         .sidebar nav a.active, .sidebar nav a:hover {
             background: #4285F4;
             color: #fff;
@@ -110,8 +121,7 @@ $recentActivity = $conn->query(
             margin-bottom: 2rem;
             padding-left: 2rem;
         }
-        .sidebar .logout-link a { color: #ffbdbd; background: #a94442; font-weight: bold; text-decoration: none;     font-size: 0.9rem;padding: 8px 14px; border-radius: 6px; display: inline-block; }
-
+        .sidebar .logout-link a { color: #ffbdbd; background: #a94442; font-weight: bold; text-decoration: none; font-size: 0.9rem;padding: 8px 14px; border-radius: 6px; display: inline-block; }
         .main-content {
             margin-left: 220px;
             padding-top: 70px;
@@ -128,6 +138,41 @@ $recentActivity = $conn->query(
             margin: 1.5rem 0 2rem 0;
             font-size: 1.1rem;
             color: #283e51;
+        }
+        .alert-complaint {
+            background: #fbeee6;
+            border-left: 7px solid #fbbd08;
+            color: #704315;
+            padding: 1.2rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+            position: relative;
+            box-shadow: 0 2px 10px rgba(251, 188, 5, 0.06);
+        }
+        .alert-complaint .alert-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .alert-complaint .alert-count {
+            font-weight: bold;
+            color: #a45e00;
+            margin-left: 8px;
+        }
+        .alert-complaint ul {
+            margin: 1rem 0 0 1.5rem;
+            padding: 0;
+            color: #704315;
+        }
+        .alert-complaint li {
+            margin-bottom: 0.6rem;
+            font-size: 0.98rem;
+        }
+        .alert-complaint .assign-link {
+            color: #4285F4;
+            text-decoration: underline;
+            font-weight: bold;
+            margin-left: 12px;
         }
         .cards {
             display: flex;
@@ -194,8 +239,6 @@ $recentActivity = $conn->query(
             .container { padding: 0 2px; }
         }
     </style>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
 </head>
 <body>
     <header class="admin-header">
@@ -227,6 +270,37 @@ $recentActivity = $conn->query(
             <div class="welcome-bar">
                 Welcome, <?= $name ?>!
             </div>
+
+            <!-- Alert for pending reports needing assignment -->
+            <?php if ($pendingCount > 0): ?>
+            <div class="alert-complaint">
+                <span class="alert-title">
+                    <i class="fas fa-exclamation-triangle"></i> 
+                    <span style="color:#a45e00;">Alert:</span> 
+                    <span class="alert-count"><?= $pendingCount ?></span>
+                    report<?= $pendingCount > 1 ? 's' : '' ?> with status <b>Pending</b> need to be assigned to a technician!
+                </span>
+                <ul>
+                    <?php while($row = $pendingToAssign->fetch_assoc()): ?>
+                    <li>
+                        <span style="font-weight:bold;"><?= htmlspecialchars($row['title']) ?></span>
+                        <span style="color:#555;">(<?= date("d M Y, H:i", strtotime($row['date_reported'])) ?>)</span>
+                        <br>
+                        <span style="font-size:0.97em;"><?= htmlspecialchars(mb_strimwidth($row['description'], 0, 60, '...')) ?></span>
+                        <a class="assign-link" href="assign_report.php?report_id=<?= $row['report_id'] ?>">Assign Now</a>
+                    </li>
+                    <?php endwhile; ?>
+                </ul>
+                <?php if ($pendingCount > 5): ?>
+                <div style="margin-top: 10px;">
+                    <a href="assign_report.php" style="color:#a45e00;font-weight:bold;text-decoration:underline;">
+                        View all <?= $pendingCount ?> unassigned pending reports
+                    </a>
+                </div>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
+
             <div class="cards">
                 <div class="card"><h3>Total Reports</h3><p><?= $totalReports ?></p></div>
                 <div class="card"><h3>Open Reports</h3><p><?= $openReports ?></p></div>
